@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
+  BookmarkPlus,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -61,6 +62,8 @@ export default function PesquisaPage() {
   const [sessionLoading, setSessionLoading] = useState(true);
   const [creatingAlert, setCreatingAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [savingSearch, setSavingSearch] = useState(false);
+  const [savedSearchMessage, setSavedSearchMessage] = useState("");
 
   const lastCountedSearch = useRef("");
 
@@ -85,6 +88,17 @@ export default function PesquisaPage() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setQuery(params.get("query") ?? "");
+    setProcedureType(params.get("procedureType") ?? "");
+    setDateFrom(params.get("dateFrom") ?? "");
+    setDateTo(params.get("dateTo") ?? "");
+    setValueFrom(params.get("valueFrom") ?? "");
+    setValueTo(params.get("valueTo") ?? "");
   }, []);
 
   useEffect(() => {
@@ -271,6 +285,78 @@ export default function PesquisaPage() {
 
     setAlertMessage("Alerta criado com sucesso.");
     setCreatingAlert(false);
+  };
+
+  const handleSaveSearch = async () => {
+    setSavingSearch(true);
+    setSavedSearchMessage("");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setSavedSearchMessage("Inicia sessão para guardares esta pesquisa.");
+      setSavingSearch(false);
+      return;
+    }
+
+    const hasFilters =
+      query.trim() ||
+      procedureType ||
+      dateFrom ||
+      dateTo ||
+      valueFrom ||
+      valueTo;
+
+    if (!hasFilters) {
+      setSavedSearchMessage("Define pelo menos um filtro antes de guardar.");
+      setSavingSearch(false);
+      return;
+    }
+
+    const filters = {
+      query: query.trim() || null,
+      procedureType: procedureType || null,
+      dateFrom: dateFrom || null,
+      dateTo: dateTo || null,
+      valueFrom: valueFrom ? Number(valueFrom) : null,
+      valueTo: valueTo ? Number(valueTo) : null,
+    };
+
+    const searchName =
+      query.trim() ||
+      procedureType ||
+      [
+        dateFrom || dateTo
+          ? `Datas ${dateFrom || "…"} a ${dateTo || "…"}`
+          : null,
+        valueFrom || valueTo
+          ? `Valores ${valueFrom || "0"}€ a ${valueTo || "…"}€`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") ||
+      "Pesquisa guardada";
+
+    const { error: rpcError } = await supabase.rpc("save_search", {
+      p_name: searchName,
+      p_filters: filters,
+    });
+
+    if (rpcError) {
+      setSavedSearchMessage(
+        rpcError.message.includes("Limite de pesquisas guardadas")
+          ? "Atingiste o limite de pesquisas guardadas do teu plano."
+          : "Não foi possível guardar esta pesquisa.",
+      );
+
+      setSavingSearch(false);
+      return;
+    }
+
+    setSavedSearchMessage("Pesquisa guardada com sucesso.");
+    setSavingSearch(false);
   };
 
   return (
@@ -466,6 +552,21 @@ export default function PesquisaPage() {
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button
             type="button"
+            onClick={handleSaveSearch}
+            disabled={savingSearch}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-cyan-500/40 hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {savingSearch ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <BookmarkPlus size={16} />
+            )}
+
+            Guardar pesquisa
+          </button>
+
+          <button
+            type="button"
             onClick={handleCreateAlert}
             disabled={creatingAlert}
             className="inline-flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2.5 text-sm font-medium text-cyan-400 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60"
@@ -479,12 +580,29 @@ export default function PesquisaPage() {
             Criar alerta desta pesquisa
           </button>
 
-          {alertMessage ? (
-            <span className="text-sm text-slate-400">
-              {alertMessage}
-            </span>
-          ) : null}
+          <Link
+            href="/pesquisas-guardadas"
+            className="text-sm text-slate-500 transition hover:text-cyan-400"
+          >
+            Ver pesquisas guardadas
+          </Link>
         </div>
+
+        {savedSearchMessage || alertMessage ? (
+          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            {savedSearchMessage ? (
+              <span className="text-slate-400">
+                {savedSearchMessage}
+              </span>
+            ) : null}
+
+            {alertMessage ? (
+              <span className="text-slate-400">
+                {alertMessage}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="mt-6">
           {loading && (
