@@ -360,286 +360,261 @@ export default function PesquisaPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="text-sm text-slate-500 transition hover:text-cyan-400"
-          >
-            ← Voltar ao dashboard
-          </Link>
+    <main className="min-h-screen text-slate-100">
+      <section className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              Pesquisa
+            </p>
 
-          <div className="mt-6 flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
-                <Search size={22} />
-              </div>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Pesquisa de procedimentos
+            </h1>
 
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  Pesquisa de procedimentos
-                </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+              Encontra procedimentos por objeto, tipo, data e valor base.
+            </p>
+          </div>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Pesquisa na base de contratação pública do Radar B2B.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 pt-1 text-sm">
-              {sessionLoading ? (
-                <span className="text-slate-500">
-                  A verificar sessão…
+          <div className="flex items-center gap-3 text-sm">
+            {sessionLoading ? (
+              <span className="text-slate-500">A verificar sessão…</span>
+            ) : sessionEmail ? (
+              <>
+                <span className="hidden text-slate-500 sm:inline">
+                  {sessionEmail}
                 </span>
-              ) : sessionEmail ? (
-                <>
-                  <span className="text-slate-400">
-                    {sessionEmail}
-                  </span>
 
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await supabase.auth.signOut();
-                      setSessionEmail(null);
-                    }}
-                    className="rounded-lg border border-slate-700 px-3 py-1.5 text-slate-300 transition hover:border-cyan-500/50 hover:text-cyan-400"
-                  >
-                    Sair
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  className="rounded-lg border border-cyan-500/40 px-3 py-1.5 text-cyan-400 transition hover:bg-cyan-500/10"
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setSessionEmail(null);
+                  }}
+                  className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-slate-400 transition hover:border-slate-700 hover:text-white"
                 >
-                  Entrar
-                </Link>
-              )}
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 font-medium text-cyan-300 transition hover:bg-cyan-500/15"
+              >
+                Entrar
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm sm:p-6">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
+            <div className="relative">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                size={20}
+              />
+
+              <input
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Pesquisar por objeto ou descrição..."
+                className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 pl-12 pr-5 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+                autoFocus
+              />
+            </div>
+
+            <select
+              value={procedureType}
+              onChange={(event) => setProcedureType(event.target.value)}
+              className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+            >
+              <option value="">Todos os tipos de procedimento</option>
+
+              {PROCEDURE_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <label
+                htmlFor="date-from"
+                className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+              >
+                Publicado desde
+              </label>
+
+              <input
+                id="date-from"
+                type="date"
+                value={dateFrom}
+                onChange={(event) => setDateFrom(event.target.value)}
+                className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="date-to"
+                className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+              >
+                Publicado até
+              </label>
+
+              <input
+                id="date-to"
+                type="date"
+                value={dateTo}
+                onChange={(event) => setDateTo(event.target.value)}
+                className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="value-from"
+                className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+              >
+                Valor mínimo (€)
+              </label>
+
+              <input
+                id="value-from"
+                type="number"
+                min="0"
+                step="0.01"
+                value={valueFrom}
+                onChange={(event) => setValueFrom(event.target.value)}
+                placeholder="Ex.: 10000"
+                className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="value-to"
+                className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+              >
+                Valor máximo (€)
+              </label>
+
+              <input
+                id="value-to"
+                type="number"
+                min="0"
+                step="0.01"
+                value={valueTo}
+                onChange={(event) => setValueTo(event.target.value)}
+                placeholder="Ex.: 100000"
+                className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+              />
             </div>
           </div>
-        </div>
 
-        <div className="grid gap-4 md:grid-cols-[1fr_320px]">
-          <div className="relative">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-              size={20}
-            />
+          <div className="mt-5 flex flex-col gap-3 border-t border-slate-800 pt-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleSaveSearch}
+                disabled={savingSearch}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-cyan-500/40 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingSearch ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <BookmarkPlus size={16} />
+                )}
 
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Pesquisar por objeto ou descrição..."
-              className="h-14 w-full rounded-2xl border border-slate-800 bg-slate-900 pl-12 pr-5 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-              autoFocus
-            />
-          </div>
+                Guardar pesquisa
+              </button>
 
-          <select
-            value={procedureType}
-            onChange={(event) =>
-              setProcedureType(event.target.value)
-            }
-            className="h-14 w-full rounded-2xl border border-slate-800 bg-slate-900 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-          >
-            <option value="">
-              Todos os tipos de procedimento
-            </option>
+              <button
+                type="button"
+                onClick={handleCreateAlert}
+                disabled={creatingAlert}
+                className="inline-flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2.5 text-sm font-medium text-cyan-300 transition hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {creatingAlert ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Bell size={16} />
+                )}
 
-            {PROCEDURE_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
+                Criar alerta
+              </button>
+            </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label
-              htmlFor="date-from"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500"
+            <Link
+              href="/pesquisas-guardadas"
+              className="text-sm font-medium text-slate-500 transition hover:text-cyan-400"
             >
-              Publicado desde
-            </label>
-
-            <input
-              id="date-from"
-              type="date"
-              value={dateFrom}
-              onChange={(event) =>
-                setDateFrom(event.target.value)
-              }
-              className="h-12 w-full rounded-2xl border border-slate-800 bg-slate-900 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-            />
+              Ver pesquisas guardadas →
+            </Link>
           </div>
 
-          <div>
-            <label
-              htmlFor="date-to"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-            >
-              Publicado até
-            </label>
+          {savedSearchMessage || alertMessage ? (
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm">
+              {savedSearchMessage ? (
+                <span className="text-slate-400">{savedSearchMessage}</span>
+              ) : null}
 
-            <input
-              id="date-to"
-              type="date"
-              value={dateTo}
-              onChange={(event) =>
-                setDateTo(event.target.value)
-              }
-              className="h-12 w-full rounded-2xl border border-slate-800 bg-slate-900 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-            />
-          </div>
-        </div>
+              {alertMessage ? (
+                <span className="text-slate-400">{alertMessage}</span>
+              ) : null}
+            </div>
+          ) : null}
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label
-              htmlFor="value-from"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-            >
-              Valor mínimo (€)
-            </label>
+          {usageError ? (
+            <div className="mt-4 rounded-xl border border-amber-900/50 bg-amber-950/20 px-4 py-3 text-sm text-amber-300">
+              {usageError}
+            </div>
+          ) : null}
+        </section>
 
-            <input
-              id="value-from"
-              type="number"
-              min="0"
-              step="0.01"
-              value={valueFrom}
-              onChange={(event) =>
-                setValueFrom(event.target.value)
-              }
-              placeholder="Ex.: 10000"
-              className="h-12 w-full rounded-2xl border border-slate-800 bg-slate-900 px-4 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="value-to"
-              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500"
-            >
-              Valor máximo (€)
-            </label>
-
-            <input
-              id="value-to"
-              type="number"
-              min="0"
-              step="0.01"
-              value={valueTo}
-              onChange={(event) =>
-                setValueTo(event.target.value)
-              }
-              placeholder="Ex.: 100000"
-              className="h-12 w-full rounded-2xl border border-slate-800 bg-slate-900 px-4 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-            />
-          </div>
-        </div>
-
-        {usageError && (
-          <div className="mt-6 rounded-2xl border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-300">
-            {usageError}
-          </div>
-        )}
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSaveSearch}
-            disabled={savingSearch}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-cyan-500/40 hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {savingSearch ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <BookmarkPlus size={16} />
-            )}
-
-            Guardar pesquisa
-          </button>
-
-          <button
-            type="button"
-            onClick={handleCreateAlert}
-            disabled={creatingAlert}
-            className="inline-flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2.5 text-sm font-medium text-cyan-400 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {creatingAlert ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Bell size={16} />
-            )}
-
-            Criar alerta desta pesquisa
-          </button>
-
-          <Link
-            href="/pesquisas-guardadas"
-            className="text-sm text-slate-500 transition hover:text-cyan-400"
-          >
-            Ver pesquisas guardadas
-          </Link>
-        </div>
-
-        {savedSearchMessage || alertMessage ? (
-          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            {savedSearchMessage ? (
-              <span className="text-slate-400">
-                {savedSearchMessage}
-              </span>
-            ) : null}
-
-            {alertMessage ? (
-              <span className="text-slate-400">
-                {alertMessage}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="mt-6">
+        <section className="mt-8">
           {loading && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <Loader2
-                size={16}
-                className="animate-spin"
-              />
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-sm text-slate-500">
+              <Loader2 size={16} className="animate-spin" />
               A pesquisar...
             </div>
           )}
 
-          {!loading &&
-            searched &&
-            results.length === 0 &&
-            !usageError && (
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center">
-                <FileText
-                  className="mx-auto text-slate-600"
-                  size={28}
-                />
-
-                <p className="mt-3 text-sm text-slate-400">
-                  Não foram encontrados procedimentos.
-                </p>
+          {!loading && searched && results.length === 0 && !usageError && (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-500">
+                <FileText size={22} />
               </div>
-            )}
+
+              <h2 className="mt-4 font-semibold text-slate-200">
+                Sem resultados
+              </h2>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Não foram encontrados procedimentos para os filtros selecionados.
+              </p>
+            </div>
+          )}
 
           {!loading && results.length > 0 && (
             <div>
-              <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-600">
-                <span>
-                  {totalResults.toLocaleString("pt-PT")} resultados
-                </span>
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Resultados
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {totalResults.toLocaleString("pt-PT")} procedimentos encontrados
+                  </p>
+                </div>
 
                 {totalPages > 1 && (
-                  <span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
                     Página {page} de {totalPages}
                   </span>
                 )}
@@ -650,23 +625,21 @@ export default function PesquisaPage() {
                   <Link
                     key={procedure.id}
                     href={`/procedimentos/${procedure.id}`}
-                    className="block rounded-2xl border border-slate-800 bg-slate-900/60 p-5 transition hover:border-cyan-500/30 hover:bg-slate-900"
+                    className="group block rounded-2xl border border-slate-800 bg-slate-900/55 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-500/30 hover:bg-slate-900/80"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="rounded-xl bg-slate-800 p-3 text-cyan-400">
-                        <FileText size={20} />
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-cyan-300 transition group-hover:bg-cyan-400/10">
+                        <FileText size={19} />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <h2 className="font-medium text-white">
-                          {procedure.object ||
-                            "Objeto não disponível"}
-                        </h2>
+                        <h3 className="font-medium leading-6 text-white">
+                          {procedure.object || "Objeto não disponível"}
+                        </h3>
 
-                        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
+                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
                           <span>
-                            {procedure.procedure_type ||
-                              "Tipo não indicado"}
+                            {procedure.procedure_type || "Tipo não indicado"}
                           </span>
 
                           {procedure.publication_date && (
@@ -680,23 +653,26 @@ export default function PesquisaPage() {
 
                           {procedure.base_price !== null &&
                             procedure.base_price !== undefined && (
-                              <span>
+                              <span className="font-medium text-slate-400">
                                 Valor base:{" "}
-                                {Number(
-                                  procedure.base_price,
-                                ).toLocaleString("pt-PT", {
-                                  style: "currency",
-                                  currency: "EUR",
-                                })}
+                                {Number(procedure.base_price).toLocaleString(
+                                  "pt-PT",
+                                  {
+                                    style: "currency",
+                                    currency: "EUR",
+                                  },
+                                )}
                               </span>
                             )}
 
                           {procedure.source_id && (
-                            <span>
-                              ID: {procedure.source_id}
-                            </span>
+                            <span>ID: {procedure.source_id}</span>
                           )}
                         </div>
+                      </div>
+
+                      <div className="hidden text-sm font-medium text-cyan-400 opacity-0 transition group-hover:opacity-100 sm:block">
+                        Abrir →
                       </div>
                     </div>
                   </Link>
@@ -704,14 +680,12 @@ export default function PesquisaPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-center gap-3">
+                <div className="mt-7 flex items-center justify-center gap-3">
                   <button
                     type="button"
-                    onClick={() =>
-                      setPage((current) => current - 1)
-                    }
+                    onClick={() => setPage((current) => current - 1)}
                     disabled={page === 1}
-                    className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-sm text-slate-300 transition hover:border-cyan-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     <ChevronLeft size={16} />
                     Anterior
@@ -723,11 +697,9 @@ export default function PesquisaPage() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setPage((current) => current + 1)
-                    }
+                    onClick={() => setPage((current) => current + 1)}
                     disabled={page === totalPages}
-                    className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-sm text-slate-300 transition hover:border-cyan-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     Seguinte
                     <ChevronRight size={16} />
@@ -736,8 +708,8 @@ export default function PesquisaPage() {
               )}
             </div>
           )}
-        </div>
-      </div>
+        </section>
+      </section>
     </main>
   );
 }

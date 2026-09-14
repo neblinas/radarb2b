@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   CheckCircle2,
   CreditCard,
   Loader2,
@@ -33,19 +32,29 @@ export default function ContaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
-  const [processingAction, setProcessingAction] = useState<string | null>(null);
+  const [processingAction, setProcessingAction] =
+    useState<string | null>(null);
   const [checkoutMessage, setCheckoutMessage] = useState<
     "success" | "cancelled" | null
   >(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(
+      window.location.search,
+    );
+
     const checkout = params.get("checkout");
 
-    if (checkout === "success" || checkout === "cancelled") {
+    if (
+      checkout === "success" ||
+      checkout === "cancelled"
+    ) {
       setCheckoutMessage(checkout);
 
-      const cleanUrl = new URL(window.location.href);
+      const cleanUrl = new URL(
+        window.location.href,
+      );
+
       cleanUrl.searchParams.delete("checkout");
 
       window.history.replaceState(
@@ -68,73 +77,94 @@ export default function ContaPage() {
         return;
       }
 
-      const [profileResult, subscriptionResult, usageResult] =
-        await Promise.all([
-          supabase
-            .from("profiles")
-            .select("account_status")
-            .eq("id", user.id)
-            .maybeSingle(),
+      const [
+        profileResult,
+        subscriptionResult,
+        usageResult,
+      ] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("account_status")
+          .eq("id", user.id)
+          .maybeSingle(),
 
-          supabase
-            .from("subscriptions")
-            .select(`
-              plan_id,
-              status,
-              stripe_customer_id,
-              stripe_subscription_id,
-              cancel_at_period_end,
-              current_period_end,
-              plans(
-                name,
-                max_searches_month
-              )
-            `)
-            .eq("user_id", user.id)
-            .maybeSingle(),
+        supabase
+          .from("subscriptions")
+          .select(`
+            plan_id,
+            status,
+            stripe_customer_id,
+            stripe_subscription_id,
+            cancel_at_period_end,
+            current_period_end,
+            plans(
+              name,
+              max_searches_month
+            )
+          `)
+          .eq("user_id", user.id)
+          .maybeSingle(),
 
-          supabase
-            .from("usage_monthly")
-            .select("searches_used, period_start")
-            .eq("user_id", user.id)
-            .order("period_start", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-        ]);
+        supabase
+          .from("usage_monthly")
+          .select("searches_used, period_start")
+          .eq("user_id", user.id)
+          .order("period_start", {
+            ascending: false,
+          })
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
       if (
         profileResult.error ||
         subscriptionResult.error ||
         usageResult.error
       ) {
-        setError("Não foi possível carregar os dados da conta.");
+        setError(
+          "Não foi possível carregar os dados da conta.",
+        );
+
         setLoading(false);
         return;
       }
 
-      const planData = subscriptionResult.data?.plans;
+      const planData =
+        subscriptionResult.data?.plans;
+
       const plan = Array.isArray(planData)
         ? planData[0] ?? null
         : planData ?? null;
 
       setAccount({
         email: user.email ?? "",
-        planId: subscriptionResult.data?.plan_id ?? "free",
+        planId:
+          subscriptionResult.data?.plan_id ??
+          "free",
         planName: plan?.name ?? "Free",
-        maxSearches: plan?.max_searches_month ?? null,
-        searchesUsed: usageResult.data?.searches_used ?? 0,
+        maxSearches:
+          plan?.max_searches_month ?? null,
+        searchesUsed:
+          usageResult.data?.searches_used ??
+          0,
         accountStatus:
-          profileResult.data?.account_status ?? "active",
+          profileResult.data?.account_status ??
+          "active",
         subscriptionStatus:
-          subscriptionResult.data?.status ?? "active",
+          subscriptionResult.data?.status ??
+          "active",
         stripeCustomerId:
-          subscriptionResult.data?.stripe_customer_id ?? null,
+          subscriptionResult.data
+            ?.stripe_customer_id ?? null,
         stripeSubscriptionId:
-          subscriptionResult.data?.stripe_subscription_id ?? null,
+          subscriptionResult.data
+            ?.stripe_subscription_id ?? null,
         cancelAtPeriodEnd:
-          subscriptionResult.data?.cancel_at_period_end ?? false,
+          subscriptionResult.data
+            ?.cancel_at_period_end ?? false,
         currentPeriodEnd:
-          subscriptionResult.data?.current_period_end ?? null,
+          subscriptionResult.data
+            ?.current_period_end ?? null,
       });
 
       setLoading(false);
@@ -148,7 +178,9 @@ export default function ContaPage() {
     window.location.href = "/login";
   }
 
-  async function handleCheckout(planId: "starter" | "pro") {
+  async function handleCheckout(
+    planId: "starter" | "pro",
+  ) {
     setActionError("");
     setProcessingAction(planId);
 
@@ -162,15 +194,17 @@ export default function ContaPage() {
         return;
       }
 
-      const { data, error: functionError } =
-        await supabase.functions.invoke(
-          "create-checkout-session",
-          {
-            body: {
-              plan_id: planId,
-            },
+      const {
+        data,
+        error: functionError,
+      } = await supabase.functions.invoke(
+        "create-checkout-session",
+        {
+          body: {
+            plan_id: planId,
           },
-        );
+        },
+      );
 
       if (functionError) {
         throw functionError;
@@ -185,9 +219,11 @@ export default function ContaPage() {
       window.location.href = data.url;
     } catch (err) {
       console.error(err);
+
       setActionError(
         "Não foi possível iniciar o pagamento. Tenta novamente.",
       );
+
       setProcessingAction(null);
     }
   }
@@ -206,13 +242,15 @@ export default function ContaPage() {
         return;
       }
 
-      const { data, error: functionError } =
-        await supabase.functions.invoke(
-          "create-customer-portal",
-          {
-            body: {},
-          },
-        );
+      const {
+        data,
+        error: functionError,
+      } = await supabase.functions.invoke(
+        "create-customer-portal",
+        {
+          body: {},
+        },
+      );
 
       if (functionError) {
         throw functionError;
@@ -227,9 +265,11 @@ export default function ContaPage() {
       window.location.href = data.url;
     } catch (err) {
       console.error(err);
+
       setActionError(
         "Não foi possível abrir a gestão da subscrição. Tenta novamente.",
       );
+
       setProcessingAction(null);
     }
   }
@@ -248,92 +288,90 @@ export default function ContaPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white">
-        <div className="mx-auto max-w-5xl px-6 py-12">
-          <p className="text-sm text-slate-400">
+      <main className="min-h-screen text-slate-100">
+        <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-sm text-slate-400">
+            <Loader2
+              size={18}
+              className="animate-spin"
+            />
+
             A carregar conta...
-          </p>
-        </div>
+          </div>
+        </section>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white">
-        <div className="mx-auto max-w-5xl px-6 py-12">
-          <div className="rounded-2xl border border-red-900/50 bg-red-950/20 p-6">
-            <p className="text-sm text-red-300">
-              {error}
-            </p>
+      <main className="min-h-screen text-slate-100">
+        <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 text-sm text-red-400">
+            {error}
           </div>
-        </div>
+        </section>
       </main>
     );
   }
 
   const usagePercentage =
-    account?.maxSearches && account.maxSearches > 0
+    account?.maxSearches &&
+    account.maxSearches > 0
       ? Math.min(
-          (account.searchesUsed / account.maxSearches) * 100,
+          (account.searchesUsed /
+            account.maxSearches) *
+            100,
           100,
         )
       : 0;
 
-  const isFree = account?.planId === "free";
-  const hasStripeCustomer = Boolean(account?.stripeCustomerId);
-  const currentPeriodEndFormatted = formatDate(
-    account?.currentPeriodEnd ?? null,
+  const isFree =
+    account?.planId === "free";
+
+  const hasStripeCustomer = Boolean(
+    account?.stripeCustomerId,
   );
 
-  return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-5xl px-6 py-8">
-        <header className="flex items-center justify-between border-b border-slate-800 pb-6">
-          <div>
-            <Link
-              href="/"
-              className="text-lg font-bold tracking-tight text-white"
-            >
-              RADAR B2B
-            </Link>
+  const currentPeriodEndFormatted =
+    formatDate(
+      account?.currentPeriodEnd ?? null,
+    );
 
-            <p className="mt-1 text-xs text-slate-500">
-              Public Procurement Intelligence
+  return (
+    <main className="min-h-screen text-slate-100">
+      <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              Conta
+            </p>
+
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              A minha conta
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+              Gere o teu plano, utilização,
+              faturação e subscrição.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={handleLogout}
-            className="flex items-center gap-2 rounded-xl border border-slate-800 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-900 hover:text-white"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-400 transition hover:border-slate-700 hover:text-white"
           >
             <LogOut size={16} />
             Sair
           </button>
-        </header>
-
-        <div className="mt-8 flex items-center gap-3">
-          <UserCircle
-            className="text-cyan-400"
-            size={30}
-          />
-
-          <div>
-            <h1 className="text-2xl font-bold">
-              A minha conta
-            </h1>
-
-            <p className="text-sm text-slate-500">
-              Consulta o teu plano, utilização e faturação.
-            </p>
-          </div>
         </div>
 
-        {checkoutMessage === "success" && (
-          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-800/50 bg-emerald-950/20 p-4">
+        {checkoutMessage === "success" ? (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
             <CheckCircle2
-              className="mt-0.5 shrink-0 text-emerald-400"
               size={20}
+              className="mt-0.5 shrink-0 text-emerald-400"
             />
 
             <div>
@@ -342,17 +380,18 @@ export default function ContaPage() {
               </p>
 
               <p className="mt-1 text-sm text-emerald-200/70">
-                A tua subscrição está a ser atualizada.
+                A tua subscrição está a ser
+                atualizada.
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {checkoutMessage === "cancelled" && (
-          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-amber-800/50 bg-amber-950/20 p-4">
+        {checkoutMessage === "cancelled" ? (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
             <XCircle
-              className="mt-0.5 shrink-0 text-amber-400"
               size={20}
+              className="mt-0.5 shrink-0 text-amber-400"
             />
 
             <div>
@@ -361,162 +400,185 @@ export default function ContaPage() {
               </p>
 
               <p className="mt-1 text-sm text-amber-200/70">
-                Não foi efetuada qualquer alteração à tua subscrição.
+                Não foi efetuada qualquer alteração
+                à tua subscrição.
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {actionError && (
-          <div className="mt-6 rounded-2xl border border-red-900/50 bg-red-950/20 p-4">
-            <p className="text-sm text-red-300">
-              {actionError}
-            </p>
+        {actionError ? (
+          <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400">
+            {actionError}
           </div>
-        )}
+        ) : null}
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Conta
-            </p>
+        <section className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/55 p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
+                <UserCircle size={20} />
+              </div>
 
-            <p className="mt-3 break-all text-sm text-white">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Conta
+                </p>
+
+                <p className="mt-1 text-sm font-semibold text-white">
+                  Utilizador
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-5 break-all text-sm text-slate-300">
               {account?.email}
             </p>
 
-            <p className="mt-2 text-xs text-slate-500">
-              Estado: {account?.accountStatus}
-            </p>
+            <div className="mt-4 border-t border-slate-800 pt-4 text-xs text-slate-500">
+              Estado:{" "}
+              <span className="font-medium text-slate-300">
+                {account?.accountStatus}
+              </span>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-cyan-900/40 bg-slate-900 p-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-400/10 to-slate-900/55 p-5 shadow-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               Plano atual
             </p>
 
-            <p className="mt-3 text-2xl font-bold text-white">
+            <p className="mt-3 text-3xl font-bold text-white">
               {account?.planName}
             </p>
 
             <p className="mt-2 text-xs text-slate-500">
               Estado da subscrição:{" "}
-              {account?.subscriptionStatus}
+              <span className="font-medium text-slate-300">
+                {account?.subscriptionStatus}
+              </span>
             </p>
 
             {account?.cancelAtPeriodEnd &&
-              currentPeriodEndFormatted && (
-                <p className="mt-2 text-xs text-amber-400">
-                  Cancelamento agendado para{" "}
-                  {currentPeriodEndFormatted}.
-                </p>
-              )}
+            currentPeriodEndFormatted ? (
+              <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2.5 text-xs text-amber-300">
+                Cancelamento agendado para{" "}
+                {currentPeriodEndFormatted}.
+              </div>
+            ) : null}
 
             {!account?.cancelAtPeriodEnd &&
-              !isFree &&
-              currentPeriodEndFormatted && (
-                <p className="mt-2 text-xs text-slate-500">
-                  Próxima renovação:{" "}
-                  {currentPeriodEndFormatted}.
-                </p>
-              )}
-          </div>
-        </section>
-
-        <section className="mt-4 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Pesquisas este mês
+            !isFree &&
+            currentPeriodEndFormatted ? (
+              <p className="mt-4 text-xs text-slate-500">
+                Próxima renovação:{" "}
+                {currentPeriodEndFormatted}.
               </p>
-
-              <p className="mt-2 text-3xl font-bold">
-                {account?.searchesUsed}
-
-                {account?.maxSearches !== null && (
-                  <span className="text-lg font-normal text-slate-500">
-                    {" "}
-                    / {account?.maxSearches}
-                  </span>
-                )}
-              </p>
-            </div>
-
-            <Search
-              className="text-cyan-400"
-              size={28}
-            />
+            ) : null}
           </div>
 
-          {account?.maxSearches !== null ? (
-            <div className="mt-5">
-              <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                <div
-                  className="h-full rounded-full bg-cyan-500 transition-all"
-                  style={{
-                    width: `${usagePercentage}%`,
-                  }}
-                />
-              </div>
-
-              <p className="mt-2 text-xs text-slate-500">
-                {account?.searchesUsed} de{" "}
-                {account?.maxSearches} pesquisas utilizadas este mês.
-              </p>
-            </div>
-          ) : (
-            <p className="mt-4 text-sm text-cyan-300">
-              Pesquisas ilimitadas.
-            </p>
-          )}
-        </section>
-
-        {isFree && (
-          <section className="mt-4 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <div className="flex items-center gap-3">
-              <CreditCard
-                className="text-cyan-400"
-                size={24}
-              />
-
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/55 p-5 shadow-sm">
+            <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-semibold">
-                  Escolher um plano
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  Aumenta os limites e ativa alertas automáticos.
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Pesquisas este mês
                 </p>
+
+                <p className="mt-3 text-3xl font-bold text-white">
+                  {account?.searchesUsed}
+
+                  {account?.maxSearches !==
+                    null && (
+                    <span className="text-lg font-normal text-slate-500">
+                      {" "}
+                      / {account?.maxSearches}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
+                <Search size={19} />
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-5">
-                <p className="text-lg font-bold">
+            {account?.maxSearches !== null ? (
+              <div className="mt-5">
+                <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-cyan-400 transition-all"
+                    style={{
+                      width: `${usagePercentage}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-slate-500">
+                  {account?.searchesUsed} de{" "}
+                  {account?.maxSearches} pesquisas
+                  utilizadas.
+                </p>
+              </div>
+            ) : (
+              <p className="mt-5 text-sm font-medium text-cyan-300">
+                Pesquisas ilimitadas
+              </p>
+            )}
+          </div>
+        </section>
+
+        {isFree ? (
+          <section className="mt-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+                Planos
+              </p>
+
+              <h2 className="mt-2 text-xl font-semibold text-white">
+                Aumentar capacidade
+              </h2>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Escolhe o plano adequado à utilização
+                da tua empresa.
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/55 p-6 shadow-sm">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Starter
                 </p>
 
-                <p className="mt-1 text-2xl font-bold text-cyan-400">
-                  19 €
-                  <span className="text-sm font-normal text-slate-500">
-                    {" "}
+                <div className="mt-4 flex items-end gap-2">
+                  <span className="text-4xl font-bold text-white">
+                    19 €
+                  </span>
+
+                  <span className="pb-1 text-sm text-slate-500">
                     / mês
                   </span>
-                </p>
+                </div>
 
-                <p className="mt-3 text-sm text-slate-400">
-                  200 pesquisas, 100 oportunidades guardadas e
-                  5 alertas.
-                </p>
+                <ul className="mt-6 space-y-3 text-sm text-slate-400">
+                  <li>200 pesquisas por mês</li>
+                  <li>100 oportunidades guardadas</li>
+                  <li>25 pesquisas guardadas</li>
+                  <li>5 alertas automáticos</li>
+                </ul>
 
                 <button
+                  type="button"
                   onClick={() =>
                     handleCheckout("starter")
                   }
-                  disabled={processingAction !== null}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={
+                    processingAction !== null
+                  }
+                  className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {processingAction === "starter" ? (
+                  {processingAction ===
+                  "starter" ? (
                     <>
                       <Loader2
                         size={17}
@@ -530,30 +592,41 @@ export default function ContaPage() {
                 </button>
               </div>
 
-              <div className="rounded-xl border border-cyan-900/50 bg-slate-950/50 p-5">
-                <p className="text-lg font-bold">
+              <div className="relative rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-400/10 to-slate-900/55 p-6 shadow-sm">
+                <div className="absolute right-5 top-5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+                  Mais completo
+                </div>
+
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-cyan-300">
                   Pro
                 </p>
 
-                <p className="mt-1 text-2xl font-bold text-cyan-400">
-                  39 €
-                  <span className="text-sm font-normal text-slate-500">
-                    {" "}
+                <div className="mt-4 flex items-end gap-2">
+                  <span className="text-4xl font-bold text-white">
+                    39 €
+                  </span>
+
+                  <span className="pb-1 text-sm text-slate-500">
                     / mês
                   </span>
-                </p>
+                </div>
 
-                <p className="mt-3 text-sm text-slate-400">
-                  Pesquisas ilimitadas, 500 oportunidades
-                  guardadas e 20 alertas.
-                </p>
+                <ul className="mt-6 space-y-3 text-sm text-slate-400">
+                  <li>Pesquisas ilimitadas</li>
+                  <li>500 oportunidades guardadas</li>
+                  <li>100 pesquisas guardadas</li>
+                  <li>20 alertas automáticos</li>
+                </ul>
 
                 <button
+                  type="button"
                   onClick={() =>
                     handleCheckout("pro")
                   }
-                  disabled={processingAction !== null}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={
+                    processingAction !== null
+                  }
+                  className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {processingAction === "pro" ? (
                     <>
@@ -571,30 +644,38 @@ export default function ContaPage() {
             </div>
 
             <p className="mt-4 text-xs text-slate-600">
-              Valores mensais. Impostos aplicáveis poderão ser
-              adicionados no pagamento.
+              Valores mensais. Impostos aplicáveis
+              poderão ser adicionados no pagamento.
             </p>
           </section>
-        )}
+        ) : null}
 
-        {!isFree && hasStripeCustomer && (
-          <section className="mt-4 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {!isFree && hasStripeCustomer ? (
+          <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/55 p-6 shadow-sm">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-semibold">
-                  Faturação e subscrição
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Faturação
                 </p>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Gere o plano, método de pagamento, faturas e
-                  cancelamento através do portal seguro da Stripe.
+                <h2 className="mt-2 text-lg font-semibold text-white">
+                  Faturação e subscrição
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                  Gere o plano, método de pagamento,
+                  faturas e cancelamento através do
+                  portal seguro da Stripe.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={handleCustomerPortal}
-                disabled={processingAction !== null}
-                className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-cyan-800 px-5 py-3 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-950/30 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={
+                  processingAction !== null
+                }
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-5 py-3 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {processingAction === "portal" ? (
                   <>
@@ -613,26 +694,18 @@ export default function ContaPage() {
               </button>
             </div>
           </section>
-        )}
+        ) : null}
 
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-8">
           <Link
             href="/pesquisa"
-            className="flex items-center gap-2 rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-cyan-400"
           >
-            <Search size={17} />
+            <Search size={16} />
             Ir para pesquisa
           </Link>
-
-          <Link
-            href="/"
-            className="flex items-center gap-2 rounded-xl border border-slate-800 px-5 py-3 text-sm text-slate-300 transition hover:bg-slate-900 hover:text-white"
-          >
-            <ArrowLeft size={17} />
-            Dashboard
-          </Link>
         </div>
-      </div>
+      </section>
     </main>
   );
 }
