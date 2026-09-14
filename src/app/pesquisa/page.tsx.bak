@@ -1,0 +1,166 @@
+﻿"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Search, FileText, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+
+type Procedure = {
+  id: string;
+  source_id: string | null;
+  object: string | null;
+  procedure_type: string | null;
+  publication_date: string | null;
+  base_price: string | number | null;
+};
+
+export default function PesquisaPage() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Procedure[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    const term = query.trim();
+
+    if (!term) {
+      setResults([]);
+      setSearched(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setSearched(true);
+
+      const pattern = `%${term}%`;
+
+      const { data } = await supabase
+        .from("procedures")
+        .select(
+          "id, source_id, object, procedure_type, publication_date, base_price"
+        )
+        .or(`object.ilike.${pattern},description.ilike.${pattern}`)
+        .order("publication_date", { ascending: false })
+        .limit(50);
+
+      setResults(data ?? []);
+      setLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
+        <div className="mb-8">
+          <Link
+            href="/"
+            className="text-sm text-slate-500 transition hover:text-cyan-400"
+          >
+            ← Voltar ao dashboard
+          </Link>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
+              <Search size={22} />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Pesquisa de procedimentos
+              </h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Pesquisa na base de contratação pública do Radar B2B.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            size={20}
+          />
+
+          <input
+            type="text"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Pesquisar por objeto ou descrição..."
+            className="h-14 w-full rounded-2xl border border-slate-800 bg-slate-900 pl-12 pr-5 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+            autoFocus
+          />
+        </div>
+
+        <div className="mt-6">
+          {loading && (
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <Loader2 size={16} className="animate-spin" />
+              A pesquisar...
+            </div>
+          )}
+
+          {!loading && searched && results.length === 0 && (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center">
+              <FileText className="mx-auto text-slate-600" size={28} />
+              <p className="mt-3 text-sm text-slate-400">
+                Não foram encontrados procedimentos.
+              </p>
+            </div>
+          )}
+
+          {!loading && results.length > 0 && (
+            <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                {results.length} resultados
+              </div>
+
+              <div className="space-y-3">
+                {results.map((procedure) => (
+                  <Link
+                    key={procedure.id}
+                    href={`/procedimentos/${procedure.id}`}
+                    className="block rounded-2xl border border-slate-800 bg-slate-900/60 p-5 transition hover:border-cyan-500/30 hover:bg-slate-900"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-xl bg-slate-800 p-3 text-cyan-400">
+                        <FileText size={20} />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h2 className="font-medium text-white">
+                          {procedure.object || "Objeto não disponível"}
+                        </h2>
+
+                        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
+                          <span>
+                            {procedure.procedure_type || "Tipo não indicado"}
+                          </span>
+
+                          {procedure.publication_date && (
+                            <span>
+                              Publicação:{" "}
+                              {new Date(
+                                procedure.publication_date
+                              ).toLocaleDateString("pt-PT")}
+                            </span>
+                          )}
+
+                          {procedure.source_id && (
+                            <span>ID: {procedure.source_id}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
