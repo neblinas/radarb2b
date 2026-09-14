@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Search,
   FileText,
@@ -44,13 +45,14 @@ type Procedure = {
 
 const PAGE_SIZE = 50;
 
-export default function PesquisaPage() {
-  const [query, setQuery] = useState("");
-  const [procedureType, setProcedureType] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [valueFrom, setValueFrom] = useState("");
-  const [valueTo, setValueTo] = useState("");
+function PesquisaContent() {
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get("query") ?? "");
+  const [procedureType, setProcedureType] = useState(() => searchParams.get("procedureType") ?? "");
+  const [dateFrom, setDateFrom] = useState(() => searchParams.get("dateFrom") ?? "");
+  const [dateTo, setDateTo] = useState(() => searchParams.get("dateTo") ?? "");
+  const [valueFrom, setValueFrom] = useState(() => searchParams.get("valueFrom") ?? "");
+  const [valueTo, setValueTo] = useState(() => searchParams.get("valueTo") ?? "");
   const [page, setPage] = useState(1);
 
   const [results, setResults] = useState<Procedure[]>([]);
@@ -66,6 +68,15 @@ export default function PesquisaPage() {
   const [savedSearchMessage, setSavedSearchMessage] = useState("");
 
   const lastCountedSearch = useRef("");
+
+  const hasActiveFilters = Boolean(
+    query.trim() ||
+      procedureType ||
+      dateFrom ||
+      dateTo ||
+      valueFrom ||
+      valueTo,
+  );
 
   const totalPages = Math.ceil(totalResults / PAGE_SIZE);
 
@@ -90,22 +101,7 @@ export default function PesquisaPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    setQuery(params.get("query") ?? "");
-    setProcedureType(params.get("procedureType") ?? "");
-    setDateFrom(params.get("dateFrom") ?? "");
-    setDateTo(params.get("dateTo") ?? "");
-    setValueFrom(params.get("valueFrom") ?? "");
-    setValueTo(params.get("valueTo") ?? "");
-  }, []);
-
-  useEffect(() => {
-    setPage(1);
-  }, [query, procedureType, dateFrom, dateTo, valueFrom, valueTo]);
-
-  useEffect(() => {
+useEffect(() => {
     const term = query.trim();
 
     if (
@@ -116,10 +112,6 @@ export default function PesquisaPage() {
       !valueFrom &&
       !valueTo
     ) {
-      setResults([]);
-      setTotalResults(0);
-      setSearched(false);
-      setUsageError("");
       return;
     }
 
@@ -419,7 +411,7 @@ export default function PesquisaPage() {
               <input
                 type="text"
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => { setQuery(event.target.value); setPage(1); }}
                 placeholder="Pesquisar por objeto ou descrição..."
                 className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 pl-12 pr-5 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
                 autoFocus
@@ -428,7 +420,7 @@ export default function PesquisaPage() {
 
             <select
               value={procedureType}
-              onChange={(event) => setProcedureType(event.target.value)}
+              onChange={(event) => { setProcedureType(event.target.value); setPage(1); }}
               className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
             >
               <option value="">Todos os tipos de procedimento</option>
@@ -454,7 +446,7 @@ export default function PesquisaPage() {
                 id="date-from"
                 type="date"
                 value={dateFrom}
-                onChange={(event) => setDateFrom(event.target.value)}
+                onChange={(event) => { setDateFrom(event.target.value); setPage(1); }}
                 className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
               />
             </div>
@@ -471,7 +463,7 @@ export default function PesquisaPage() {
                 id="date-to"
                 type="date"
                 value={dateTo}
-                onChange={(event) => setDateTo(event.target.value)}
+                onChange={(event) => { setDateTo(event.target.value); setPage(1); }}
                 className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
               />
             </div>
@@ -490,7 +482,7 @@ export default function PesquisaPage() {
                 min="0"
                 step="0.01"
                 value={valueFrom}
-                onChange={(event) => setValueFrom(event.target.value)}
+                onChange={(event) => { setValueFrom(event.target.value); setPage(1); }}
                 placeholder="Ex.: 10000"
                 className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
               />
@@ -510,7 +502,7 @@ export default function PesquisaPage() {
                 min="0"
                 step="0.01"
                 value={valueTo}
-                onChange={(event) => setValueTo(event.target.value)}
+                onChange={(event) => { setValueTo(event.target.value); setPage(1); }}
                 placeholder="Ex.: 100000"
                 className="h-12 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
               />
@@ -570,7 +562,7 @@ export default function PesquisaPage() {
             </div>
           ) : null}
 
-          {usageError ? (
+          {hasActiveFilters && usageError ? (
             <div className="mt-4 rounded-xl border border-amber-900/50 bg-amber-950/20 px-4 py-3 text-sm text-amber-300">
               {usageError}
             </div>
@@ -578,14 +570,14 @@ export default function PesquisaPage() {
         </section>
 
         <section className="mt-8">
-          {loading && (
+          {hasActiveFilters && loading && (
             <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-sm text-slate-500">
               <Loader2 size={16} className="animate-spin" />
               A pesquisar...
             </div>
           )}
 
-          {!loading && searched && results.length === 0 && !usageError && (
+          {hasActiveFilters && !loading && searched && results.length === 0 && !usageError && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-500">
                 <FileText size={22} />
@@ -601,7 +593,7 @@ export default function PesquisaPage() {
             </div>
           )}
 
-          {!loading && results.length > 0 && (
+          {hasActiveFilters && !loading && results.length > 0 && (
             <div>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
@@ -713,3 +705,24 @@ export default function PesquisaPage() {
     </main>
   );
 }
+
+export default function PesquisaPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen text-slate-100">
+          <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-sm text-slate-400">
+              <Loader2 size={18} className="animate-spin" />
+              A carregar pesquisa...
+            </div>
+          </section>
+        </main>
+      }
+    >
+      <PesquisaContent />
+    </Suspense>
+  );
+}
+
+

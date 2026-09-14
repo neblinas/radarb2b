@@ -10,9 +10,7 @@ import {
   Bookmark,
   Building2,
   FileText,
-  LayoutDashboard,
   Search,
-  Settings,
   ShieldCheck,
   Trophy,
   Users,
@@ -143,12 +141,6 @@ export default function Home() {
     const term = search.trim();
 
     if (!term) {
-      setSearchResults({
-        procedures: [],
-        companies: [],
-        entities: [],
-        cpvs: [],
-      });
       return;
     }
 
@@ -467,3 +459,7 @@ export default function Home() {
     </main>
   );
 }
+
+
+
+

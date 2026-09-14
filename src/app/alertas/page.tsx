@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CalendarDays,
@@ -34,6 +35,7 @@ type AlertItem = {
 };
 
 export default function AlertasPage() {
+  const router = useRouter();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,7 +49,7 @@ export default function AlertasPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -70,7 +72,7 @@ export default function AlertasPage() {
     };
 
     loadAlerts();
-  }, []);
+  }, [router]);
 
   const handleToggleAlert = async (
     alertId: string,
@@ -487,3 +489,5 @@ export default function AlertasPage() {
     </main>
   );
 }
+
+
