@@ -31,7 +31,7 @@ type SavedSearch = {
   updated_at: string;
 };
 
-function buildSearchUrl(filters: SavedSearchFilters) {
+export function buildSearchUrl(filters: SavedSearchFilters) {
   const params = new URLSearchParams();
 
   if (filters.query) {
@@ -416,5 +416,6 @@ export default function PesquisasGuardadasPage() {
     </main>
   );
 }
+
 
 
