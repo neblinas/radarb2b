@@ -22,49 +22,49 @@ import {
 const initialKpis = [
   {
     label: "Procedimentos",
-    value: "â€”",
+    value: "—",
     icon: FileText,
     detail: "concursos e procedimentos",
   },
   {
     label: "Contratos",
-    value: "â€”",
+    value: "—",
     icon: FileText,
     detail: "contratos analisados",
   },
   {
     label: "Empresas",
-    value: "â€”",
+    value: "—",
     icon: Building2,
     detail: "empresas identificadas",
   },
   {
     label: "Entidades",
-    value: "â€”",
+    value: "—",
     icon: Users,
-    detail: "compradores pÃºblicos",
+    detail: "compradores públicos",
   },
 ];
 
 const modules = [
   {
     title: "Procedimentos",
-    description: "Pesquisa concursos, consultas e outros procedimentos de contrataÃ§Ã£o.",
+    description: "Pesquisa concursos, consultas e outros procedimentos de contratação.",
     icon: FileText,
   },
   {
     title: "Empresas",
-    description: "Analisa concorrentes, vencedores e histÃ³rico de participaÃ§Ã£o.",
+    description: "Analisa concorrentes, vencedores e histórico de participação.",
     icon: Building2,
   },
   {
     title: "Entidades Compradoras",
-    description: "Descobre quem compra, quanto compra e em que Ã¡reas.",
+    description: "Descobre quem compra, quanto compra e em que áreas.",
     icon: Users,
   },
   {
     title: "Oportunidades",
-    description: "Identifica padrÃµes de compra e potenciais oportunidades comerciais.",
+    description: "Identifica padrões de compra e potenciais oportunidades comerciais.",
     icon: Trophy,
   },
 ];
@@ -93,7 +93,7 @@ export default function Home() {
         current.map((kpi, index) => ({
           ...kpi,
           value: results[index].error
-            ? "â€”"
+            ? "—"
             : (results[index].count ?? 0).toLocaleString("pt-PT"),
         }))
       );
@@ -170,15 +170,15 @@ export default function Home() {
               Principal
             </div>
 
-            <a className="flex items-center gap-3 rounded-xl bg-cyan-500/10 px-3 py-2.5 text-sm font-medium text-cyan-400" href="#">
+            <Link className="flex items-center gap-3 rounded-xl bg-cyan-500/10 px-3 py-2.5 text-sm font-medium text-cyan-400" href="/">
               <LayoutDashboard size={18} />
               Dashboard
-            </a>
+            </Link>
 
-            <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-slate-900 hover:text-white" href="#">
+            <Link className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-slate-900 hover:text-white" href="/pesquisa">
               <Search size={18} />
               Pesquisa
-            </a>
+            </Link>
 
             <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-slate-900 hover:text-white" href="#">
               <FileText size={18} />
@@ -202,10 +202,10 @@ export default function Home() {
           </nav>
 
           <div className="border-t border-slate-800 p-3">
-            <a className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-500 transition hover:bg-slate-900 hover:text-slate-300" href="#">
+            <Link className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-500 transition hover:bg-slate-900 hover:text-slate-300" href="/conta">
               <Settings size={18} />
               A minha conta
-            </a>
+            </Link>
           </div>
         </aside>
 
@@ -229,7 +229,7 @@ export default function Home() {
                   Base de dados
                 </div>
                 <div className="text-sm font-semibold text-slate-300">
-                  Portugal Â· 2024
+                  Portugal · 2024
                 </div>
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function Home() {
                               {item.name || "Sem nome"}
                             </p>
                             <p className="mt-1 text-xs text-slate-500">
-                              NIF {item.nif || "â€”"}
+                              NIF {item.nif || "—"}
                             </p>
                           </div>
                         ))
@@ -306,7 +306,7 @@ export default function Home() {
                               {item.name || "Sem nome"}
                             </p>
                             <p className="mt-1 text-xs text-slate-500">
-                              NIF {item.nif || "â€”"}
+                              NIF {item.nif || "—"}
                             </p>
                           </div>
                         ))
@@ -333,10 +333,10 @@ export default function Home() {
                         className="rounded-xl bg-slate-800/60 p-3"
                       >
                         <p className="text-sm font-semibold text-cyan-400">
-                          {item.cpv_code || "Sem cÃ³digo"}
+                          {item.cpv_code || "Sem código"}
                         </p>
                         <p className="mt-1 text-xs text-slate-400">
-                          {item.description || "Sem descriÃ§Ã£o"}
+                          {item.description || "Sem descrição"}
                         </p>
                       </div>
                     ))}
@@ -373,7 +373,7 @@ export default function Home() {
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">Explorar Radar B2B</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  ComeÃ§a pela Ã¡rea que queres analisar.
+                  Começa pela área que queres analisar.
                 </p>
               </div>
 
@@ -409,8 +409,8 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   <BarChart3 size={20} className="text-cyan-400" />
                   <div>
-                    <h2 className="font-semibold">VisÃ£o do mercado</h2>
-                    <p className="text-xs text-slate-600">Ãrea reservada para mÃ©tricas dinÃ¢micas</p>
+                    <h2 className="font-semibold">Visão do mercado</h2>
+                    <p className="text-xs text-slate-600">Área reservada para métricas dinâmicas</p>
                   </div>
                 </div>
                 <div className="mt-6 flex h-48 items-end gap-2">
@@ -430,17 +430,17 @@ export default function Home() {
                   <Trophy size={20} className="text-cyan-400" />
                   <div>
                     <h2 className="font-semibold">Oportunidades</h2>
-                    <p className="text-xs text-slate-600">PrÃ³xima fase</p>
+                    <p className="text-xs text-slate-600">Próxima fase</p>
                   </div>
                 </div>
 
                 <div className="mt-6 space-y-4">
                   <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                    <div className="text-2xl font-bold">â€”</div>
+                    <div className="text-2xl font-bold">—</div>
                     <div className="mt-1 text-xs text-slate-600">Oportunidades identificadas</div>
                   </div>
                   <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                    <div className="text-2xl font-bold">â€”</div>
+                    <div className="text-2xl font-bold">—</div>
                     <div className="mt-1 text-xs text-slate-600">Novos compradores</div>
                   </div>
                 </div>
@@ -448,7 +448,7 @@ export default function Home() {
             </section>
 
             <footer className="border-t border-slate-800 pt-6 text-xs text-slate-600">
-              Radar B2B Â· Plataforma de inteligÃªncia sobre contrataÃ§Ã£o pÃºblica
+              Radar B2B Â· Plataforma de inteligência sobre contratação pública
             </footer>
           </div>
         </section>
