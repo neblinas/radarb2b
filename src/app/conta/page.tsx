@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   CreditCard,
@@ -28,6 +29,7 @@ type AccountData = {
 };
 
 export default function ContaPage() {
+  const router = useRouter();
   const [account, setAccount] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,7 +51,7 @@ export default function ContaPage() {
       checkout === "success" ||
       checkout === "cancelled"
     ) {
-      setCheckoutMessage(checkout);
+      queueMicrotask(() => setCheckoutMessage(checkout));
 
       const cleanUrl = new URL(
         window.location.href,
@@ -73,7 +75,7 @@ export default function ContaPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -171,11 +173,11 @@ export default function ContaPage() {
     }
 
     loadAccount();
-  }, []);
+  }, [router]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    router.push("/login");
   }
 
   async function handleCheckout(
@@ -190,7 +192,7 @@ export default function ContaPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -238,7 +240,7 @@ export default function ContaPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -709,3 +711,8 @@ export default function ContaPage() {
     </main>
   );
 }
+
+
+
+
+

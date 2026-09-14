@@ -1,7 +1,6 @@
 ﻿import Link from "next/link";
 import {
   ArrowLeft,
-  Building2,
   CalendarDays,
   FileText,
   MapPin,
@@ -186,8 +185,6 @@ export default async function ProcedurePage({ params }: PageProps) {
 
   const cpvs = cpvsData ?? [];
   const cpvMap = new Map(cpvs.map((cpv) => [cpv.id, cpv]));
-
-  const contractMap = new Map(contracts.map((contract) => [contract.id, contract]));
   const awardMap = new Map(awards.map((award) => [award.id, award]));
 
   const totalContractValue = contracts.reduce(
@@ -624,6 +621,7 @@ export default async function ProcedurePage({ params }: PageProps) {
     </main>
   );
 }
+
 
 
 

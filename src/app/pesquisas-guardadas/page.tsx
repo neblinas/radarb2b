@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bookmark,
   CalendarDays,
@@ -140,6 +141,7 @@ function getFilterLabels(filters: SavedSearchFilters) {
 }
 
 export default function PesquisasGuardadasPage() {
+  const router = useRouter();
   const [savedSearches, setSavedSearches] = useState<
     SavedSearch[]
   >([]);
@@ -156,7 +158,7 @@ export default function PesquisasGuardadasPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -181,7 +183,7 @@ export default function PesquisasGuardadasPage() {
     };
 
     loadSavedSearches();
-  }, []);
+  }, [router]);
 
   const handleRemove = async (
     savedSearchId: string,
@@ -414,3 +416,5 @@ export default function PesquisasGuardadasPage() {
     </main>
   );
 }
+
+

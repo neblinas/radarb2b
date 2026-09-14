@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bookmark,
   ExternalLink,
@@ -27,6 +28,7 @@ type SavedOpportunity = {
 };
 
 export default function OportunidadesPage() {
+  const router = useRouter();
   const [items, setItems] = useState<SavedOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,7 +41,7 @@ export default function OportunidadesPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -79,7 +81,7 @@ export default function OportunidadesPage() {
     };
 
     loadSaved();
-  }, []);
+  }, [router]);
 
   const handleRemove = async (procedureId: string) => {
     setRemovingId(procedureId);
@@ -310,3 +312,4 @@ export default function OportunidadesPage() {
     </main>
   );
 }
+
