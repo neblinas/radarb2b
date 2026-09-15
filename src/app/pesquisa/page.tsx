@@ -115,6 +115,8 @@ useEffect(() => {
       return;
     }
 
+    let active = true;
+
     const timer = setTimeout(async () => {
       setLoading(true);
       setSearched(true);
@@ -136,6 +138,8 @@ useEffect(() => {
           data: { user },
         } = await supabase.auth.getUser();
 
+        if (!active) return;
+
         if (!user) {
           lastCountedSearch.current = "";
           setUsageError("Inicia sessão para efetuares pesquisas.");
@@ -147,6 +151,8 @@ useEffect(() => {
 
         const { data: allowed, error: usageRpcError } =
           await supabase.rpc("increment_search_usage");
+
+        if (!active) return;
 
         if (usageRpcError || allowed !== true) {
           lastCountedSearch.current = "";
@@ -206,6 +212,8 @@ useEffect(() => {
 
       const { data, count, error: queryError } = await request;
 
+      if (!active) return;
+
       if (queryError) {
         setUsageError("Não foi possível concluir a pesquisa.");
         setResults([]);
@@ -219,7 +227,10 @@ useEffect(() => {
       setLoading(false);
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [
     query,
     procedureType,
