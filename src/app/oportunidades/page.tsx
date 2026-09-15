@@ -228,7 +228,7 @@ export default function OportunidadesPage() {
 
                             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
                               <span>
-                                Publicação:{" "}
+                                Publicação no BASE:{" "}
                                 {item.procedure
                                   ?.publication_date
                                   ? new Date(
