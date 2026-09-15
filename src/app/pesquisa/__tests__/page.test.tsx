@@ -1,5 +1,5 @@
 ﻿import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PesquisaPage from "@/app/pesquisa/page";
@@ -266,6 +266,64 @@ describe("PesquisaPage", () => {
     );
 
     expect(builder.range).toHaveBeenCalledWith(0, 49);
+  });
+
+  it("ignora resultados de uma pesquisa substituída", async () => {
+    mocks.searchParams = new URLSearchParams({ query: "antigo" });
+
+    const oldBuilder = createQueryBuilder();
+    const newBuilder = createQueryBuilder({
+      data: [{
+        id: "procedure-new",
+        source_id: "BASE-NEW",
+        object: "Resultado novo",
+        procedure_type: "Concurso público",
+        publication_date: "2026-09-15",
+        base_price: 10000,
+      }],
+      count: 1,
+    });
+
+    let releaseOld: (() => void) | undefined;
+    oldBuilder.then.mockImplementation((resolve) => {
+      releaseOld = () => resolve({
+        data: [{
+          id: "procedure-old",
+          source_id: "BASE-OLD",
+          object: "Resultado antigo",
+          procedure_type: "Concurso público",
+          publication_date: "2026-09-14",
+          base_price: 10000,
+        }],
+        count: 1,
+        error: null,
+      });
+    });
+
+    mocks.from
+      .mockReturnValueOnce(oldBuilder)
+      .mockReturnValueOnce(newBuilder);
+
+    const user = userEvent.setup();
+    render(<PesquisaPage />);
+
+    await waitFor(() => expect(oldBuilder.then).toHaveBeenCalled());
+
+    const input = screen.getByPlaceholderText(
+      "Pesquisar por objeto ou descrição...",
+    );
+    await user.clear(input);
+    await user.type(input, "novo");
+
+    expect(await screen.findByText("Resultado novo")).toBeInTheDocument();
+
+    await act(async () => {
+      releaseOld?.();
+    });
+
+    expect(screen.getByText("Resultado novo")).toBeInTheDocument();
+    expect(screen.queryByText("Resultado antigo")).not.toBeInTheDocument();
+    expect(mocks.rpc).toHaveBeenCalledTimes(2);
   });
 
   it("pagina os resultados sem voltar a consumir quota", async () => {
