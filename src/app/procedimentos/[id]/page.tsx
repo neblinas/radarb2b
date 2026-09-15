@@ -270,7 +270,7 @@ export default async function ProcedurePage({ params }: PageProps) {
                   </span>
 
                   <span>
-                    Publicação:{" "}
+                    Publicação no BASE:{" "}
                     <strong className="font-medium text-slate-300">
                       {formatDate(procedure.publication_date)}
                     </strong>
@@ -784,7 +784,7 @@ export default async function ProcedurePage({ params }: PageProps) {
               <div className="mt-5 space-y-5">
                 <div>
                   <p className="text-xs text-slate-500">
-                    Publicação
+                    Publicação no BASE
                   </p>
                   <p className="mt-1 font-semibold text-white">
                     {formatDate(procedure.publication_date)}
