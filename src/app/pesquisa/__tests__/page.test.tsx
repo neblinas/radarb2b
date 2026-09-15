@@ -144,11 +144,11 @@ describe("PesquisaPage", () => {
       "Concurso público",
     );
 
-    expect(screen.getByLabelText("Publicado desde")).toHaveValue(
+    expect(screen.getByLabelText("Publicado no BASE desde")).toHaveValue(
       "2026-01-01",
     );
 
-    expect(screen.getByLabelText("Publicado até")).toHaveValue(
+    expect(screen.getByLabelText("Publicado no BASE até")).toHaveValue(
       "2026-09-01",
     );
 

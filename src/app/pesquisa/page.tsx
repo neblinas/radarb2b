@@ -439,7 +439,7 @@ useEffect(() => {
                 htmlFor="date-from"
                 className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
               >
-                Publicado desde
+                Publicado no BASE desde
               </label>
 
               <input
@@ -456,7 +456,7 @@ useEffect(() => {
                 htmlFor="date-to"
                 className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
               >
-                Publicado até
+                Publicado no BASE até
               </label>
 
               <input
@@ -636,7 +636,7 @@ useEffect(() => {
 
                           {procedure.publication_date && (
                             <span>
-                              Publicação:{" "}
+                              Publicação no BASE:{" "}
                               {new Date(
                                 procedure.publication_date,
                               ).toLocaleDateString("pt-PT")}
