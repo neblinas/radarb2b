@@ -30,7 +30,7 @@ export default function NewCollaboratorPage() {
     const { data, error: invokeError } = await supabase.functions.invoke("invite-commercial-member", { body: form });
     if (invokeError || data?.error) {
       setStatus("error");
-      setError(data?.error || "Não foi possível criar o colaborador.");
+      setError(data?.error || invokeError?.message || "Não foi possível criar o colaborador.");
       return;
     }
     setStatus("sent");
