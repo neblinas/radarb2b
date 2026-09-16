@@ -369,7 +369,9 @@ useEffect(() => {
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] border border-cyan-950/80 bg-[#09182a] p-6 sm:p-8 lg:flex lg:items-end lg:justify-between">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.14),transparent_34%)]" />
+          <div className="relative flex w-full flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
               Pesquisa
@@ -412,6 +414,7 @@ useEffect(() => {
                 Entrar
               </Link>
             )}
+          </div>
           </div>
         </div>
 

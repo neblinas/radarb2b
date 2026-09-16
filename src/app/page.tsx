@@ -192,7 +192,9 @@ export default function Home() {
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] border border-cyan-950/80 bg-[#09182a] p-6 sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.16),transparent_33%)]" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
               Radar B2B
@@ -215,6 +217,7 @@ export default function Home() {
             <div className="mt-1 text-sm font-semibold text-slate-200">
               Portugal · dados BASE atualizados semanalmente
             </div>
+          </div>
           </div>
         </div>
 
