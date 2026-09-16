@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -42,9 +42,38 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
+  const [isRecovery, setIsRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const recoveryRequested = new URLSearchParams(
+        window.location.search,
+      ).get("mode") === "reset";
+
+      if (recoveryRequested) {
+        setIsRecovery(true);
+      }
+    }, 0);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setIsRecovery(true);
+        setIsSignup(false);
+        setError("");
+        setMessage("");
+      }
+    });
+
+    return () => {
+      window.clearTimeout(timer);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,6 +81,24 @@ export default function LoginPage() {
     setLoading(true);
     setMessage("");
     setError("");
+
+    if (isRecovery) {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+      });
+
+      if (updateError) {
+        setError("Não foi possível atualizar a palavra-passe. O link pode ter expirado.");
+        setLoading(false);
+        return;
+      }
+
+      setMessage("Palavra-passe atualizada. Já podes entrar na tua conta.");
+      setPassword("");
+      setIsRecovery(false);
+      setLoading(false);
+      return;
+    }
 
     if (isSignup) {
       const { data, error } = await supabase.auth.signUp({
@@ -96,8 +143,36 @@ export default function LoginPage() {
 
   function toggleMode() {
     setIsSignup((current) => !current);
+    setIsRecovery(false);
     setError("");
     setMessage("");
+  }
+
+  async function handleRecoveryRequest() {
+    setLoading(true);
+    setMessage("");
+    setError("");
+
+    if (!email) {
+      setError("Indica primeiro o email da tua conta.");
+      setLoading(false);
+      return;
+    }
+
+    const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo: `${window.location.origin}/login?mode=reset`,
+      },
+    );
+
+    if (recoveryError) {
+      setError("Não foi possível enviar o email de recuperação. Tenta novamente.");
+    } else {
+      setMessage("Enviámos um link de recuperação para o teu email.");
+    }
+
+    setLoading(false);
   }
 
   return (
@@ -216,15 +291,17 @@ export default function LoginPage() {
             <div className="rounded-[28px] border border-slate-800 bg-[#081525] p-6 shadow-2xl shadow-black/20 sm:p-8">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
-                  {isSignup ? "Nova conta" : "Área reservada"}
+                  {isRecovery ? "Recuperação" : isSignup ? "Nova conta" : "Área reservada"}
                 </p>
 
                 <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-                  {isSignup ? "Criar conta" : "Bem-vindo de volta"}
+                  {isRecovery ? "Definir nova palavra-passe" : isSignup ? "Criar conta" : "Bem-vindo de volta"}
                 </h1>
 
                 <p className="mt-3 text-sm leading-6 text-slate-500">
-                  {isSignup
+                  {isRecovery
+                    ? "Escolhe uma nova palavra-passe para recuperar o acesso à tua conta."
+                    : isSignup
                     ? "Cria a tua conta para começares a acompanhar oportunidades no Radar B2B."
                     : "Entra na tua conta para acederes às tuas pesquisas, oportunidades e alertas."}
                 </p>
@@ -264,16 +341,14 @@ export default function LoginPage() {
                     type="password"
                     required
                     minLength={6}
-                    autoComplete={
-                      isSignup ? "new-password" : "current-password"
-                    }
+                    autoComplete={isSignup || isRecovery ? "new-password" : "current-password"}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder="••••••••"
                     className="h-12 w-full rounded-xl border border-slate-800 bg-[#06101f] px-4 text-sm text-white outline-none transition placeholder:text-slate-700 focus:border-cyan-500/60 focus:ring-2 focus:ring-cyan-500/10"
                   />
 
-                  {isSignup ? (
+                  {isSignup || isRecovery ? (
                     <p className="mt-2 text-xs text-slate-600">
                       Mínimo de 6 caracteres.
                     </p>
@@ -298,6 +373,17 @@ export default function LoginPage() {
                   </div>
                 ) : null}
 
+                {!isSignup && !isRecovery ? (
+                  <button
+                    type="button"
+                    onClick={handleRecoveryRequest}
+                    disabled={loading}
+                    className="w-full text-left text-sm font-medium text-cyan-400 transition hover:text-cyan-300 disabled:opacity-50"
+                  >
+                    Esqueci-me da palavra-passe
+                  </button>
+                ) : null}
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -305,7 +391,9 @@ export default function LoginPage() {
                 >
                   {loading
                     ? "A processar..."
-                    : isSignup
+                    : isRecovery
+                      ? "Atualizar palavra-passe"
+                      : isSignup
                       ? "Criar conta"
                       : "Entrar"}
 
@@ -320,7 +408,9 @@ export default function LoginPage() {
 
               <div className="mt-7 border-t border-slate-800 pt-6 text-center">
                 <p className="text-sm text-slate-500">
-                  {isSignup
+                  {isRecovery
+                    ? "Já recuperaste o acesso?"
+                    : isSignup
                     ? "Já tens uma conta?"
                     : "Ainda não tens uma conta?"}{" "}
                   <button
@@ -328,7 +418,7 @@ export default function LoginPage() {
                     onClick={toggleMode}
                     className="font-medium text-cyan-400 transition hover:text-cyan-300"
                   >
-                    {isSignup ? "Entrar" : "Criar conta"}
+                    {isRecovery ? "Voltar a entrar" : isSignup ? "Entrar" : "Criar conta"}
                   </button>
                 </p>
               </div>
