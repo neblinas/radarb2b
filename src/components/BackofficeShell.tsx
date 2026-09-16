@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BellRing, Building2, ClipboardList, FileCheck2, LayoutDashboard, LogOut, Menu, Search, Settings2, ShieldCheck, Users, X } from "lucide-react";
+import { BarChart3, BellRing, BriefcaseBusiness, Building2, ClipboardList, FileCheck2, LayoutDashboard, LogOut, Menu, Search, Settings2, ShieldCheck, Users, X } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -11,6 +11,7 @@ export const backofficeNav = [
   { label: "Clientes e colaboradores", href: "/backoffice/contas", icon: Users },
   { label: "Planos e utilização", href: "/backoffice/planos", icon: BarChart3 },
   { label: "Oportunidades", href: "/backoffice/oportunidades", icon: Building2 },
+  { label: "Leads comerciais", href: "/backoffice/leads", icon: BriefcaseBusiness },
   { label: "Atividade", href: "/backoffice/atividade", icon: ClipboardList },
   { label: "Verificação", href: "/backoffice/verificacao", icon: FileCheck2 },
 ];
