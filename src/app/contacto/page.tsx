@@ -27,7 +27,10 @@ export default function ContactPage() {
   function askAssistant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const match = knowledge.find((item) => item.terms.some((term) => question.toLowerCase().includes(term)));
-    setAnswer(match || null);
+    setAnswer(match || {
+      title: "Vamos encaminhar a tua questão",
+      answer: "Não encontrei uma resposta segura na informação pública disponível. Consulta as Perguntas frequentes ou abre um ticket com o máximo de contexto possível; a equipa poderá acompanhar o pedido.",
+    });
   }
 
   async function submitTicket(event: FormEvent<HTMLFormElement>) {
