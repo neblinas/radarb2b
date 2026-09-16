@@ -90,6 +90,22 @@ create table if not exists public.admin_audit_log (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.support_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  email text not null,
+  category text not null default 'Suporte geral',
+  subject text not null,
+  message text not null check (length(trim(message)) >= 20),
+  consent boolean not null default false check (consent = true),
+  status text not null default 'open' check (status in ('open', 'in_progress', 'resolved', 'closed')),
+  assigned_to uuid references auth.users(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists support_requests_created_idx on public.support_requests (created_at desc);
+
 create index if not exists commercial_opportunities_org_idx on public.commercial_opportunities (organization_id, updated_at desc);
 create index if not exists commercial_opportunities_search_idx on public.commercial_opportunities using gin (to_tsvector('simple', company_name || ' ' || contact_name || ' ' || coalesce(contact_email, '')));
 create index if not exists audit_log_org_idx on public.admin_audit_log (organization_id, created_at desc);
@@ -224,6 +240,13 @@ alter table public.verified_domains enable row level security;
 alter table public.commercial_opportunities enable row level security;
 alter table public.commercial_notes enable row level security;
 alter table public.admin_audit_log enable row level security;
+alter table public.support_requests enable row level security;
+
+drop policy if exists support_requests_insert on public.support_requests;
+create policy support_requests_insert on public.support_requests for insert with check (consent = true and (user_id is null or user_id = auth.uid()));
+
+drop policy if exists support_requests_select on public.support_requests;
+create policy support_requests_select on public.support_requests for select using (user_id = auth.uid() or public.crm_has_role(array['admin', 'commercial_manager', 'commercial']));
 
 drop policy if exists crm_members_select on public.organization_members;
 create policy crm_members_select on public.organization_members for select using (user_id = auth.uid() or (organization_id = public.crm_organization_id() and public.crm_has_role(array['admin', 'commercial_manager'])));

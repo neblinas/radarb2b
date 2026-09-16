@@ -7,6 +7,7 @@ const legalLinks = [
   ["Termos de utilização", "/termos"],
   ["Privacidade", "/privacidade"],
   ["Cookies", "/cookies"],
+  ["Contacto", "/contacto"],
   ["Acesso comercial", "/acesso-comercial"],
 ] as const;
 
