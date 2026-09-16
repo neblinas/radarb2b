@@ -1,7 +1,7 @@
 ﻿import { expect, test } from "@playwright/test";
 
 test("a aplicação responde e carrega o login", async ({ page }) => {
-  const response = await page.goto("/login");
+  const response = await page.goto("/login", { waitUntil: "domcontentloaded" });
 
   expect(response).not.toBeNull();
   expect(response?.status()).toBeLessThan(500);
