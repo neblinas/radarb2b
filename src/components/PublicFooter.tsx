@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { legalOperator } from "@/lib/legal";
 
 const legalLinks = [
   ["Sobre nós", "/sobre"],
@@ -6,6 +7,7 @@ const legalLinks = [
   ["Termos de utilização", "/termos"],
   ["Privacidade", "/privacidade"],
   ["Cookies", "/cookies"],
+  ["Acesso comercial", "/acesso-comercial"],
 ] as const;
 
 export default function PublicFooter() {
@@ -15,7 +17,7 @@ export default function PublicFooter() {
         <div>
           <p className="text-sm font-bold tracking-[0.16em] text-white">RADAR B2B</p>
           <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">Inteligência comercial para contratação pública portuguesa.</p>
-          <p className="mt-4 text-xs text-slate-600">© {new Date().getFullYear()} Radar B2B. Informação legal do responsável pelo tratamento a preencher com os dados da entidade operadora.</p>
+          <p className="mt-4 text-xs text-slate-600">© {new Date().getFullYear()} Radar B2B · {legalOperator.name}, ENI · NIF {legalOperator.nif} · {legalOperator.country}</p>
         </div>
         <nav aria-label="Informação legal" className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-400">
           {legalLinks.map(([label, href]) => <Link key={href} href={href} className="transition hover:text-cyan-300">{label}</Link>)}
