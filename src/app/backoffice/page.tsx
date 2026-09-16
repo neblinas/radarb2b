@@ -8,8 +8,8 @@ import { supabase } from "@/lib/supabase";
 const allowedRoles = new Set(["admin", "commercial", "commercial_manager"]);
 
 const modules = [
-  { title: "Contas e colaboradores", detail: "Convites, perfis e acessos comerciais.", icon: Users },
-  { title: "Planos e utilização", detail: "Subscrições, quotas e sinais de retenção.", icon: BarChart3 },
+  { title: "Contas e colaboradores", detail: "Convites, perfis e acessos comerciais.", icon: Users, href: "/backoffice/contas" },
+  { title: "Planos e utilização", detail: "Subscrições, quotas e sinais de retenção.", icon: BarChart3, href: "/backoffice/planos" },
   { title: "Verificação da empresa", detail: "Nome, NIF, identidade e estado documental.", icon: Building2, href: "/backoffice/verificacao" },
   { title: "Domínios autorizados", detail: "Domínios verificados para colaboradores.", icon: FileCheck2, href: "/backoffice/verificacao#dominios" },
 ];
