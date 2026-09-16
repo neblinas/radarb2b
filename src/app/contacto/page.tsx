@@ -7,6 +7,7 @@ import PublicPage from "@/components/PublicPage";
 import { supabase } from "@/lib/supabase";
 
 const knowledge = [
+  { terms: ["preco", "quanto custa", "custo", "planos", "free", "starter", "pro", "qualo preco"], title: "Planos e preços", answer: "O Radar B2B tem três planos: Free, sem custo para começar; Starter, 19 € por mês, com 200 pesquisas, 100 oportunidades, 25 pesquisas guardadas e 5 alertas; e Pro, 39 € por mês, com pesquisas ilimitadas, 500 oportunidades, 100 pesquisas guardadas e 20 alertas. Os impostos aplicáveis podem ser adicionados no pagamento.", },
   { terms: ["dados", "fonte", "base", "portal"], title: "De onde vêm os dados?", answer: "A fonte principal é o Portal BASE. Os dados dependem da publicação oficial e da atualização disponível; confirma sempre o procedimento na fonte oficial." },
   { terms: ["tempo real", "atualização", "atualizado", "frequência"], title: "O Radar B2B é tempo real?", answer: "Não. A base é atualizada de acordo com a disponibilidade da fonte pública. O produto não deve ser tratado como um feed instantâneo." },
   { terms: ["quota", "limite", "pesquisas", "plano"], title: "Como funcionam os limites?", answer: "Os limites dependem do plano e são aplicados pelo backend. Consulta a área Conta para veres a utilização e o plano atual." },
@@ -22,11 +23,12 @@ export default function ContactPage() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
 
-  const suggestions = useMemo(() => question.trim().length > 1 ? knowledge.filter((item) => item.terms.some((term) => question.toLowerCase().includes(term))).slice(0, 3) : [], [question]);
+  const normalize = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const suggestions = useMemo(() => question.trim().length > 1 ? knowledge.filter((item) => item.terms.some((term) => normalize(question).includes(normalize(term)))).slice(0, 3) : [], [question]);
 
   function askAssistant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const match = knowledge.find((item) => item.terms.some((term) => question.toLowerCase().includes(term)));
+    const match = knowledge.find((item) => item.terms.some((term) => normalize(question).includes(normalize(term))));
     setAnswer(match || {
       title: "Vamos encaminhar a tua questão",
       answer: "Não encontrei uma resposta segura na informação pública disponível. Consulta as Perguntas frequentes ou abre um ticket com o máximo de contexto possível; a equipa poderá acompanhar o pedido.",

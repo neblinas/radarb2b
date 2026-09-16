@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 };
 
 const questions = [
+  ["Quais são os planos e preços?", "Existem três planos: Free, sem custo para começar; Starter, 19 € por mês, com 200 pesquisas, 100 oportunidades, 25 pesquisas guardadas e 5 alertas; e Pro, 39 € por mês, com pesquisas ilimitadas, 500 oportunidades, 100 pesquisas guardadas e 20 alertas. Os impostos aplicáveis podem ser adicionados no pagamento."],
   ["De onde vêm os dados?", "A fonte principal é o Portal BASE, através dos recursos públicos disponibilizados para contratação pública portuguesa. A frequência indicada é semanal e cada procedimento mantém a referência e a data de publicação disponíveis."],
   ["O Radar B2B é tempo real?", "Não. A informação depende da publicação e atualização da fonte pública. Deves confirmar sempre o procedimento e os documentos na fonte oficial antes de agir."],
   ["Posso pesquisar sem conta?", "Podes navegar pelo produto e consultar áreas públicas. A execução de pesquisas e as funcionalidades de guardar oportunidades, pesquisas e alertas exigem uma sessão autenticada."],
