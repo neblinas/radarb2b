@@ -10,14 +10,14 @@ import {
   Building2,
   Check,
   Radar,
-  Search,
+  SearchCheck,
   ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const benefits = [
   {
-    icon: Search,
+    icon: SearchCheck,
     title: "Encontra oportunidades relevantes",
     description:
       "Pesquisa contratação pública com filtros focados em inteligência comercial.",

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Bell,
+  BellRing,
   CalendarDays,
   Clock3,
   Filter,
@@ -266,7 +266,7 @@ export default function AlertasPage() {
           ) : alerts.length === 0 ? (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center shadow-sm">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-500">
-                <Bell size={22} />
+                <BellRing size={22} />
               </div>
 
               <h2 className="mt-4 text-lg font-semibold text-slate-200">
@@ -328,7 +328,7 @@ export default function AlertasPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
-                              <Bell size={18} />
+                              <BellRing size={18} />
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2">

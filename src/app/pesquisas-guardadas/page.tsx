@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Bookmark,
+  BookmarkCheck,
   CalendarDays,
   Filter,
   Loader2,
@@ -218,7 +218,7 @@ export default function PesquisasGuardadasPage() {
           ) : savedSearches.length === 0 ? (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center shadow-sm">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-500">
-                <Bookmark size={22} />
+                <BookmarkCheck size={22} />
               </div>
 
               <h2 className="mt-4 text-lg font-semibold text-slate-200">
@@ -275,7 +275,7 @@ export default function PesquisasGuardadasPage() {
                         <div className="flex h-full flex-col">
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
-                              <Bookmark size={18} />
+                              <BookmarkCheck size={18} />
                             </div>
 
                             <div className="min-w-0">

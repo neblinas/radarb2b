@@ -8,7 +8,7 @@ import {
   CreditCard,
   Loader2,
   LogOut,
-  Search,
+  SearchCheck,
   UserCircle,
   XCircle,
 } from "lucide-react";
@@ -508,7 +508,7 @@ export default function ContaPage() {
               </div>
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
-                <Search size={19} />
+                <SearchCheck size={19} />
               </div>
             </div>
 
@@ -724,7 +724,7 @@ export default function ContaPage() {
             href="/pesquisa"
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-cyan-400"
           >
-            <Search size={16} />
+                    <SearchCheck size={16} />
             Ir para pesquisa
           </Link>
         </div>

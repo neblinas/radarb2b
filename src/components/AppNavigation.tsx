@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
-  Bookmark,
-  LayoutDashboard,
+  BellRing,
+  BookmarkCheck,
+  ChartNoAxesCombined,
   Menu,
-  Search,
+  SearchCheck,
   Settings,
   ShieldCheck,
-  Trophy,
+  Handshake,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -19,27 +19,27 @@ const navItems = [
   {
     label: "Dashboard",
     href: "/",
-    icon: LayoutDashboard,
+    icon: ChartNoAxesCombined,
   },
   {
     label: "Pesquisa",
     href: "/pesquisa",
-    icon: Search,
+    icon: SearchCheck,
   },
   {
     label: "Pesquisas guardadas",
     href: "/pesquisas-guardadas",
-    icon: Bookmark,
+    icon: BookmarkCheck,
   },
   {
     label: "Oportunidades",
     href: "/oportunidades",
-    icon: Trophy,
+    icon: Handshake,
   },
   {
     label: "Alertas",
     href: "/alertas",
-    icon: Bell,
+    icon: BellRing,
   },
 ];
 

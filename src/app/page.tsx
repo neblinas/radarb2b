@@ -5,28 +5,28 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 import {
-  BarChart3,
-  Bell,
-  Bookmark,
+  BellRing,
+  BookmarkCheck,
   Building2,
-  FileText,
-  Search,
+  ChartNoAxesCombined,
+  FileSignature,
+  Gavel,
+  Landmark,
+  SearchCheck,
   ShieldCheck,
-  Trophy,
-  Users,
 } from "lucide-react";
 
 const initialKpis = [
   {
     label: "Procedimentos",
     value: "—",
-    icon: FileText,
+    icon: Gavel,
     detail: "concursos e procedimentos",
   },
   {
     label: "Contratos",
     value: "—",
-    icon: FileText,
+    icon: FileSignature,
     detail: "contratos analisados",
   },
   {
@@ -38,7 +38,7 @@ const initialKpis = [
   {
     label: "Entidades",
     value: "—",
-    icon: Users,
+    icon: Landmark,
     detail: "compradores públicos",
   },
 ];
@@ -48,28 +48,28 @@ const modules = [
     title: "Pesquisar procedimentos",
     description:
       "Pesquisa concursos, consultas e outros procedimentos de contratação.",
-    icon: Search,
+    icon: SearchCheck,
     href: "/pesquisa",
   },
   {
     title: "Pesquisas guardadas",
     description:
       "Volta rapidamente às combinações de filtros que guardaste.",
-    icon: Bookmark,
+    icon: BookmarkCheck,
     href: "/pesquisas-guardadas",
   },
   {
     title: "Oportunidades guardadas",
     description:
       "Consulta e gere os procedimentos que marcaste para acompanhar.",
-    icon: Trophy,
+    icon: ChartNoAxesCombined,
     href: "/oportunidades",
   },
   {
     title: "Alertas",
     description:
       "Gere os alertas automáticos criados a partir das tuas pesquisas.",
-    icon: Bell,
+    icon: BellRing,
     href: "/alertas",
   },
 ];
@@ -223,7 +223,7 @@ export default function Home() {
 
         <section className="mt-8">
           <div className="relative">
-            <Search
+            <SearchCheck
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
               size={20}
             />
@@ -417,7 +417,7 @@ export default function Home() {
         <section className="mt-10 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
             <div className="flex items-start gap-3">
-              <BarChart3
+              <ChartNoAxesCombined
                 size={20}
                 className="mt-0.5 shrink-0 text-cyan-400"
               />

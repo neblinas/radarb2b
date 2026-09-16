@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Search,
-  FileText,
+  Gavel,
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Bell,
+  BellRing,
   BookmarkPlus,
   RotateCcw,
 } from "lucide-react";
@@ -584,7 +584,7 @@ useEffect(() => {
                 {creatingAlert ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <Bell size={16} />
+                  <BellRing size={16} />
                 )}
 
                 Criar alerta
@@ -629,7 +629,7 @@ useEffect(() => {
           {hasActiveFilters && !loading && searched && results.length === 0 && !usageError && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-500">
-                <FileText size={22} />
+                <Gavel size={22} />
               </div>
 
               <h2 className="mt-4 font-semibold text-slate-200">
@@ -675,7 +675,7 @@ useEffect(() => {
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-cyan-300 transition group-hover:bg-cyan-400/10">
-                        <FileText size={19} />
+                        <Gavel size={19} />
                       </div>
 
                       <div className="min-w-0 flex-1">
