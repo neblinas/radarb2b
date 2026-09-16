@@ -64,6 +64,12 @@ create table if not exists public.commercial_opportunities (
   updated_at timestamptz not null default now()
 );
 
+alter table public.commercial_opportunities add column if not exists company_nif text;
+alter table public.commercial_opportunities add column if not exists phone text;
+alter table public.commercial_opportunities add column if not exists website text;
+alter table public.commercial_opportunities add column if not exists contact_channel text;
+alter table public.commercial_opportunities add column if not exists last_contact_at timestamptz;
+
 create table if not exists public.commercial_notes (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -154,6 +160,9 @@ begin
 end;
 $$;
 
+-- Radar B2B CRM foundation
+-- Run once in Supabase SQL Editor as project owner.
+
 create or replace function public.update_commercial_opportunity_stage(p_id uuid, p_stage text)
 returns public.commercial_opportunities
 language plpgsql
@@ -169,6 +178,22 @@ begin
   returning * into updated;
   if updated.id is null then raise exception 'Opportunity not found'; end if;
   perform public.crm_audit('stage_updated', 'commercial_opportunity', updated.id, jsonb_build_object('stage', p_stage));
+  return updated;
+end;
+$$;
+
+create or replace function public.update_commercial_opportunity_details(p_id uuid, p_company_name text, p_contact_name text, p_contact_email text default null, p_note text default null, p_owner_id uuid default null, p_next_action_at timestamptz default null, p_company_nif text default null, p_phone text default null, p_website text default null, p_contact_channel text default null, p_last_contact_at timestamptz default null)
+returns public.commercial_opportunities
+language plpgsql security invoker set search_path = public as $$
+declare updated public.commercial_opportunities;
+begin
+  if not public.crm_has_role() then raise exception 'CRM access denied'; end if;
+  update public.commercial_opportunities
+  set company_name=trim(p_company_name), contact_name=trim(p_contact_name), contact_email=nullif(trim(p_contact_email), ''), note=nullif(trim(p_note), ''), owner_id=coalesce(p_owner_id, owner_id), next_action_at=p_next_action_at, company_nif=nullif(trim(p_company_nif), ''), phone=nullif(trim(p_phone), ''), website=nullif(trim(p_website), ''), contact_channel=nullif(trim(p_contact_channel), ''), last_contact_at=p_last_contact_at, updated_at=now()
+  where id=p_id and organization_id=public.crm_organization_id()
+  returning * into updated;
+  if updated.id is null then raise exception 'Opportunity not found'; end if;
+  perform public.crm_audit('details_updated', 'commercial_opportunity', updated.id, jsonb_build_object('company_name', updated.company_name));
   return updated;
 end;
 $$;
