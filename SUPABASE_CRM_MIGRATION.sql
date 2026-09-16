@@ -137,6 +137,25 @@ begin
 end;
 $$;
 
+create or replace function public.update_crm_member_access(p_user_id uuid, p_role text, p_status text)
+returns public.organization_members
+language plpgsql security invoker set search_path=public as $$
+declare updated public.organization_members;
+begin
+  if not public.crm_has_role(array['admin', 'commercial_manager']) then raise exception 'CRM access denied'; end if;
+  if p_role not in ('admin', 'commercial_manager', 'commercial') then raise exception 'Invalid CRM role'; end if;
+  if p_status not in ('active', 'invited', 'suspended') then raise exception 'Invalid CRM status'; end if;
+  if p_role = 'admin' and coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin' then raise exception 'Only admin can grant admin role'; end if;
+  update public.organization_members
+  set role = p_role, status = p_status
+  where organization_id = public.crm_organization_id() and user_id = p_user_id
+  returning * into updated;
+  if updated.user_id is null then raise exception 'Member not found'; end if;
+  perform public.crm_audit('member_access_updated', 'organization_member', p_user_id, jsonb_build_object('role', p_role, 'status', p_status));
+  return updated;
+end;
+$$;
+
 create or replace function public.create_commercial_opportunity(
   p_company_name text,
   p_contact_name text,
@@ -208,6 +227,9 @@ alter table public.admin_audit_log enable row level security;
 
 drop policy if exists crm_members_select on public.organization_members;
 create policy crm_members_select on public.organization_members for select using (user_id = auth.uid() or (organization_id = public.crm_organization_id() and public.crm_has_role(array['admin', 'commercial_manager'])));
+
+drop policy if exists crm_members_update on public.organization_members;
+create policy crm_members_update on public.organization_members for update using (organization_id = public.crm_organization_id() and public.crm_has_role(array['admin', 'commercial_manager'])) with check (organization_id = public.crm_organization_id() and public.crm_has_role(array['admin', 'commercial_manager']));
 
 drop policy if exists crm_opportunities_select on public.commercial_opportunities;
 create policy crm_opportunities_select on public.commercial_opportunities for select using (organization_id = public.crm_organization_id());
