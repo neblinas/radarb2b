@@ -328,6 +328,11 @@ export default function ContaPage() {
         )
       : 0;
 
+  const remainingSearches =
+    account?.maxSearches !== null && account?.maxSearches !== undefined
+      ? Math.max(account.maxSearches - (account.searchesUsed ?? 0), 0)
+      : null;
+
   const isFree =
     account?.planId === "free";
 
@@ -354,8 +359,8 @@ export default function ContaPage() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-              Gere o teu plano, utilização,
-              faturação e subscrição.
+              Controla o acesso à inteligência comercial, a utilização e o plano
+              que acompanha o crescimento da tua empresa.
             </p>
           </div>
 
@@ -520,6 +525,10 @@ export default function ContaPage() {
                   {account?.maxSearches} pesquisas
                   utilizadas.
                 </p>
+
+                <p className="mt-2 text-xs font-medium text-cyan-300">
+                  {remainingSearches} pesquisas disponíveis este mês
+                </p>
               </div>
             ) : (
               <p className="mt-5 text-sm font-medium text-cyan-300">
@@ -532,7 +541,7 @@ export default function ContaPage() {
         {isFree ? (
           <section className="mt-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
                 Planos
               </p>
 
@@ -541,8 +550,7 @@ export default function ContaPage() {
               </h2>
 
               <p className="mt-2 text-sm text-slate-500">
-                Escolhe o plano adequado à utilização
-                da tua empresa.
+                 Mais dados. Mais oportunidades. Menos trabalho manual.
               </p>
             </div>
 
@@ -561,6 +569,11 @@ export default function ContaPage() {
                     / mês
                   </span>
                 </div>
+
+                 <p className="mt-3 text-sm leading-6 text-slate-400">
+                   Para equipas pequenas que estão a começar a acompanhar o
+                   mercado.
+                 </p>
 
                 <ul className="mt-6 space-y-3 text-sm text-slate-400">
                   <li>200 pesquisas por mês</li>
@@ -612,6 +625,11 @@ export default function ContaPage() {
                     / mês
                   </span>
                 </div>
+
+                 <p className="mt-3 text-sm leading-6 text-slate-300">
+                   Para equipas comerciais que precisam de acompanhar mais
+                   oportunidades todos os dias.
+                 </p>
 
                 <ul className="mt-6 space-y-3 text-sm text-slate-400">
                   <li>Pesquisas ilimitadas</li>

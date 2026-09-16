@@ -13,15 +13,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
-type SavedSearchFilters = {
-  query?: string | null;
-  procedureType?: string | null;
-  dateFrom?: string | null;
-  dateTo?: string | null;
-  valueFrom?: string | number | null;
-  valueTo?: string | number | null;
-};
+import {
+  buildSearchUrl,
+  type SavedSearchFilters,
+} from "@/lib/savedSearches";
 
 type SavedSearch = {
   id: string;
@@ -30,46 +25,6 @@ type SavedSearch = {
   created_at: string;
   updated_at: string;
 };
-
-export function buildSearchUrl(filters: SavedSearchFilters) {
-  const params = new URLSearchParams();
-
-  if (filters.query) {
-    params.set("query", String(filters.query));
-  }
-
-  if (filters.procedureType) {
-    params.set("procedureType", String(filters.procedureType));
-  }
-
-  if (filters.dateFrom) {
-    params.set("dateFrom", String(filters.dateFrom));
-  }
-
-  if (filters.dateTo) {
-    params.set("dateTo", String(filters.dateTo));
-  }
-
-  if (
-    filters.valueFrom !== null &&
-    filters.valueFrom !== undefined &&
-    filters.valueFrom !== ""
-  ) {
-    params.set("valueFrom", String(filters.valueFrom));
-  }
-
-  if (
-    filters.valueTo !== null &&
-    filters.valueTo !== undefined &&
-    filters.valueTo !== ""
-  ) {
-    params.set("valueTo", String(filters.valueTo));
-  }
-
-  const queryString = params.toString();
-
-  return queryString ? `/pesquisa?${queryString}` : "/pesquisa";
-}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("pt-PT", {
@@ -227,10 +182,10 @@ export default function PesquisasGuardadasPage() {
               Pesquisas guardadas
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-              Reutiliza combinações de filtros sem
-              voltares a configurar a pesquisa.
-            </p>
+             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+               Reexecuta rapidamente os teus critérios comerciais e mantém as
+               pesquisas importantes sempre à mão.
+             </p>
           </div>
 
           <Link
@@ -267,11 +222,10 @@ export default function PesquisasGuardadasPage() {
                 Ainda não tens pesquisas guardadas
               </h2>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                Define os filtros de uma pesquisa e
-                guarda-os para poderes voltar a
-                executá-la rapidamente.
-              </p>
+               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                 Define filtros uma vez e volta a encontrar oportunidades sem
+                 repetires trabalho manual.
+               </p>
 
               <Link
                 href="/pesquisa"
@@ -283,7 +237,7 @@ export default function PesquisasGuardadasPage() {
             </div>
           ) : (
             <>
-              <div className="mb-4 flex items-end justify-between gap-4">
+               <div className="mb-4 flex items-end justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-white">
                     Pesquisas guardadas
@@ -296,6 +250,10 @@ export default function PesquisasGuardadasPage() {
                       : "pesquisas guardadas"}
                   </p>
                 </div>
+
+                   <div className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-300">
+                     Prontas a executar
+                   </div>
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">

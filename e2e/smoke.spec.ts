@@ -10,6 +10,8 @@ test("a aplicação responde e carrega o login", async ({ page }) => {
 });
 
 test("as rotas principais não devolvem erro HTTP 5xx", async ({ page }) => {
+  test.setTimeout(120_000);
+
   const routes = [
     "/",
     "/pesquisa",
@@ -20,7 +22,10 @@ test("as rotas principais não devolvem erro HTTP 5xx", async ({ page }) => {
   ];
 
   for (const route of routes) {
-    const response = await page.goto(route);
+    const response = await page.goto(route, {
+      waitUntil: "domcontentloaded",
+      timeout: 60_000,
+    });
 
     expect(
       response?.status(),

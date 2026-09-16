@@ -213,7 +213,7 @@ export default function Home() {
               Base de dados
             </div>
             <div className="mt-1 text-sm font-semibold text-slate-200">
-              Portugal · 2024
+              Portugal · dados BASE atualizados semanalmente
             </div>
           </div>
         </div>

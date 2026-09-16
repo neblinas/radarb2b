@@ -214,6 +214,15 @@ export default async function ProcedurePage({ params }: PageProps) {
     0,
   );
 
+  const awardDifference = procedure.base_price !== null
+    ? Number(procedure.base_price) - totalAwardValue
+    : null;
+
+  const awardDifferencePercentage =
+    procedure.base_price && Number(procedure.base_price) > 0 && awardDifference !== null
+      ? (awardDifference / Number(procedure.base_price)) * 100
+      : null;
+
   const participantsWithCompany = participants
     .map((participant) => ({
       ...participant,
@@ -261,7 +270,12 @@ export default async function ProcedurePage({ params }: PageProps) {
                   {procedure.object || "Objeto não disponível"}
                 </h1>
 
-                <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+                 <p className="mt-4 max-w-2xl text-sm leading-6 text-cyan-100/70">
+                   Avalia esta oportunidade com base no valor, entidade compradora,
+                   concorrência e histórico associado.
+                 </p>
+
+                 <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
                   <span>
                     ID fonte:{" "}
                     <strong className="font-medium text-slate-300">
@@ -721,8 +735,8 @@ export default async function ProcedurePage({ params }: PageProps) {
             </section>
           </div>
 
-          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
-            <section className="rounded-3xl border border-slate-800 bg-[#081525] p-6">
+           <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+             <section className="rounded-3xl border border-cyan-500/20 bg-gradient-to-b from-cyan-500/10 to-[#081525] p-6 shadow-[0_16px_50px_rgba(8,145,178,0.08)]">
               <div className="flex items-center gap-3">
                 <Landmark size={19} className="text-cyan-400" />
                 <h2 className="font-semibold text-white">
@@ -768,7 +782,11 @@ export default async function ProcedurePage({ params }: PageProps) {
                 </p>
               )}
 
-              <div className="mt-6 border-t border-slate-800 pt-6">
+               <div className="mt-6 border-t border-cyan-500/15 pt-6">
+                 <p className="mb-3 text-xs leading-5 text-slate-400">
+                   Guarda este procedimento para acompanhar a oportunidade e
+                   compará-la com outras pesquisas.
+                 </p>
                 <SaveOpportunityButton procedureId={procedure.id} />
               </div>
             </section>
@@ -828,6 +846,24 @@ export default async function ProcedurePage({ params }: PageProps) {
                     {formatValue(totalAwardValue)}
                   </p>
                 </div>
+
+                {awardDifference !== null && awardDifference > 0 ? (
+                  <div>
+                    <p className="text-xs text-slate-500">
+                      Diferença face ao preço base
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-emerald-300">
+                      {formatValue(awardDifference)}
+                    </p>
+                    {awardDifferencePercentage !== null ? (
+                      <p className="mt-1 text-xs text-emerald-400/70">
+                        {awardDifferencePercentage.toLocaleString("pt-PT", {
+                          maximumFractionDigits: 1,
+                        })}% abaixo do preço base
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 <div>
                   <p className="text-xs text-slate-500">

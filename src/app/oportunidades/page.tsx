@@ -124,10 +124,10 @@ export default function OportunidadesPage() {
               Oportunidades guardadas
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-              Procedimentos que marcaste para acompanhar e
-              analisar mais tarde.
-            </p>
+             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+               Reúne as oportunidades com maior potencial para acompanhar,
+               comparar e transformar em ação comercial.
+             </p>
           </div>
 
           <Link
@@ -161,10 +161,10 @@ export default function OportunidadesPage() {
                 Ainda não tens oportunidades guardadas
               </h2>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                Pesquisa procedimentos e guarda os que
-                pretendes acompanhar.
-              </p>
+               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                 Guarda procedimentos relevantes para não perderes prazos,
+                 valores e entidades compradoras.
+               </p>
 
               <Link
                 href="/pesquisa"
@@ -181,7 +181,7 @@ export default function OportunidadesPage() {
                   Oportunidades
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
+                 <p className="mt-1 text-sm text-slate-500">
                   {items.length}{" "}
                   {items.length === 1
                     ? "oportunidade guardada"

@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Bell,
   BookmarkPlus,
+  RotateCcw,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -79,6 +80,20 @@ function PesquisaContent() {
   );
 
   const totalPages = Math.ceil(totalResults / PAGE_SIZE);
+
+  const handleClearFilters = () => {
+    setQuery("");
+    setProcedureType("");
+    setDateFrom("");
+    setDateTo("");
+    setValueFrom("");
+    setValueTo("");
+    setPage(1);
+    setSearched(false);
+    setUsageError("");
+    setSavedSearchMessage("");
+    setAlertMessage("");
+  };
 
   useEffect(() => {
     const loadSession = async () => {
@@ -365,7 +380,7 @@ useEffect(() => {
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-              Encontra procedimentos por objeto, tipo, data e valor base.
+              Encontra oportunidades comerciais por objeto, tipo, data e valor base.
             </p>
           </div>
 
@@ -401,8 +416,16 @@ useEffect(() => {
         </div>
 
         <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm sm:p-6">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
-            <div className="relative">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
+            <div className="min-w-0 flex-1">
+              <label
+                htmlFor="procedure-search"
+                className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+              >
+                O que procuras?
+              </label>
+
+              <div className="relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
                 size={20}
@@ -413,24 +436,36 @@ useEffect(() => {
                 value={query}
                 onChange={(event) => { setQuery(event.target.value); setPage(1); }}
                 placeholder="Pesquisar por objeto ou descrição..."
+                id="procedure-search"
                 className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 pl-12 pr-5 text-sm text-white outline-none placeholder:text-slate-600 transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
                 autoFocus
               />
+              </div>
             </div>
 
-            <select
-              value={procedureType}
-              onChange={(event) => { setProcedureType(event.target.value); setPage(1); }}
-              className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
-            >
-              <option value="">Todos os tipos de procedimento</option>
+            <div className="min-w-0 xl:w-[min(100%,360px)]">
+              <label
+                htmlFor="procedure-type"
+                className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+              >
+                Tipo de procedimento
+              </label>
 
-              {PROCEDURE_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+              <select
+                id="procedure-type"
+                value={procedureType}
+                onChange={(event) => { setProcedureType(event.target.value); setPage(1); }}
+                className="h-14 w-full rounded-xl border border-slate-800 bg-slate-950/70 px-4 text-sm text-white outline-none transition focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10"
+              >
+                <option value="">Todos os tipos de procedimento</option>
+
+                {PROCEDURE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -511,6 +546,17 @@ useEffect(() => {
 
           <div className="mt-5 flex flex-col gap-3 border-t border-slate-800 pt-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="inline-flex items-center gap-2 rounded-xl px-2.5 py-2.5 text-sm font-medium text-slate-500 transition hover:text-white"
+                >
+                  <RotateCcw size={15} />
+                  Limpar filtros
+                </button>
+              ) : null}
+
               <button
                 type="button"
                 onClick={handleSaveSearch}
@@ -597,9 +643,14 @@ useEffect(() => {
             <div>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Resultados
-                  </h2>
+                   <div className="flex flex-wrap items-center gap-3">
+                     <h2 className="text-lg font-semibold text-white">
+                       Oportunidades encontradas
+                     </h2>
+                     <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-cyan-300">
+                       BASE atual
+                     </span>
+                   </div>
                   <p className="mt-1 text-sm text-slate-500">
                     {totalResults.toLocaleString("pt-PT")} procedimentos encontrados
                   </p>
@@ -643,9 +694,9 @@ useEffect(() => {
                             </span>
                           )}
 
-                          {procedure.base_price !== null &&
+                           {procedure.base_price !== null &&
                             procedure.base_price !== undefined && (
-                              <span className="font-medium text-slate-400">
+                               <span className="font-semibold text-cyan-300">
                                 Valor base:{" "}
                                 {Number(procedure.base_price).toLocaleString(
                                   "pt-PT",

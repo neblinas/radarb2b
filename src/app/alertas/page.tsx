@@ -233,10 +233,10 @@ export default function AlertasPage() {
               Alertas
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
-              Acompanha automaticamente novas oportunidades
-              com base nos filtros das tuas pesquisas.
-            </p>
+             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+               Recebe novas oportunidades automaticamente e mantém o radar
+               comercial ativo, mesmo quando não estás a pesquisar.
+             </p>
           </div>
 
           <Link
@@ -270,11 +270,10 @@ export default function AlertasPage() {
                 Ainda não tens alertas
               </h2>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                Faz uma pesquisa e cria um alerta para
-                acompanhares automaticamente novos
-                procedimentos relevantes.
-              </p>
+               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                 Faz uma pesquisa, define os critérios certos e deixa o Radar
+                 B2B encontrar novos procedimentos por ti.
+               </p>
 
               <Link
                 href="/pesquisa"
@@ -292,7 +291,7 @@ export default function AlertasPage() {
                     Alertas configurados
                   </h2>
 
-                  <p className="mt-1 text-sm text-slate-500">
+                   <p className="mt-1 text-sm text-slate-500">
                     {alerts.length}{" "}
                     {alerts.length === 1
                       ? "alerta"
@@ -300,7 +299,7 @@ export default function AlertasPage() {
                   </p>
                 </div>
 
-                <div className="text-xs text-slate-600">
+                 <div className="rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-xs font-medium text-emerald-300">
                   {
                     alerts.filter(
                       (alert) => alert.active,

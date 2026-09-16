@@ -2,9 +2,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import PesquisasGuardadasPage, {
-  buildSearchUrl,
-} from "@/app/pesquisas-guardadas/page";
+import PesquisasGuardadasPage from "@/app/pesquisas-guardadas/page";
+import { buildSearchUrl } from "@/lib/savedSearches";
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
