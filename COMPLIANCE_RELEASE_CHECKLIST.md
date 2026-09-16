@@ -1,0 +1,40 @@
+# Radar B2B - checklist de publicação
+
+Este checklist acompanha a implementação técnica. Não substitui revisão jurídica, contrato de subcontratação, registo de atividades ou validação de segurança.
+
+## Identidade e domínios
+
+- [ ] Confirmar entidade legal, NIF, morada e email de suporte.
+- [ ] Preencher `NEXT_PUBLIC_LEGAL_ENTITY_*`, `NEXT_PUBLIC_PRIVACY_EMAIL` e `NEXT_PUBLIC_SUPPORT_EMAIL` nos ambientes Vercel.
+- [ ] Confirmar domínio principal e redirecionamentos HTTPS no Vercel.
+- [ ] Confirmar DNS SPF, DKIM e DMARC para emails transacionais.
+- [ ] Preencher `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` e `NEXT_PUBLIC_BING_SITE_VERIFICATION`, se usados.
+- [ ] Confirmar que o nome comercial e o domínio não infringem marca ou direitos de terceiros.
+
+## RGPD e cookies
+
+- [ ] Identificar o responsável pelo tratamento e, se aplicável, o encarregado de proteção de dados.
+- [ ] Confirmar finalidades, bases legais, prazos de conservação e destinatários.
+- [ ] Formalizar contratos com Supabase, Vercel, Sentry, Stripe e outros subcontratantes.
+- [ ] Avaliar transferências internacionais e garantias aplicáveis.
+- [ ] Confirmar que ferramentas de análise/marketing só carregam após consentimento.
+- [ ] Definir processo para acesso, retificação, apagamento, oposição, limitação e portabilidade.
+- [ ] Definir processo de resposta a incidentes e violações de dados.
+- [ ] Rever os Termos de utilização, Privacidade e Cookies com assessoria jurídica.
+
+## Back-office comercial
+
+- [ ] Criar tabelas `organizations`, `commercial_members`, `company_verifications`, `verified_domains` e `admin_audit_log`.
+- [ ] Criar RPCs para convites, verificação, suspensão, notas e auditoria.
+- [ ] Aplicar RLS por organização e role; nunca confiar apenas no cliente.
+- [ ] Definir roles `admin`, `commercial_manager` e `commercial` no `app_metadata` através de operação segura.
+- [ ] Validar convites, recuperação de conta, revogação de acesso e logs de auditoria.
+- [ ] Confirmar que colaboradores só veem contas e oportunidades autorizadas.
+
+## Pós-publicação
+
+- [ ] Validar produção com conta Free e contas pagas de teste.
+- [ ] Confirmar pesquisa, quotas, alertas, oportunidades e portal de faturação.
+- [ ] Verificar `robots.txt`, `sitemap.xml`, canonical e metatags.
+- [ ] Testar mobile, teclado, leitor de ecrã, contraste e `prefers-reduced-motion`.
+- [ ] Guardar URL, commit, resultados CI e evidência de aprovação.
