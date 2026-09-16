@@ -11,9 +11,41 @@ create table if not exists public.support_requests (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create or replace function public.update_support_request(p_id uuid, p_status text, p_assigned_to uuid default null)
+returns public.support_requests
+language plpgsql security invoker set search_path = public as $$
+declare updated public.support_requests;
+begin
+  if not public.crm_has_role(array['admin', 'commercial_manager', 'commercial']) then raise exception 'Support access denied'; end if;
+  if p_status not in ('open', 'in_progress', 'resolved', 'closed') then raise exception 'Invalid support status'; end if;
+  update public.support_requests set status = p_status, assigned_to = p_assigned_to, updated_at = now() where id = p_id returning * into updated;
+  if updated.id is null then raise exception 'Support request not found'; end if;
+  return updated;
+end;
+$$;
 create index if not exists support_requests_created_idx on public.support_requests (created_at desc);
+
+create or replace function public.update_support_request(p_id uuid, p_status text, p_assigned_to uuid default null)
+returns public.support_requests
+language plpgsql security invoker set search_path = public as $$
+declare updated public.support_requests;
+begin
+  if not public.crm_has_role(array['admin', 'commercial_manager', 'commercial']) then raise exception 'Support access denied'; end if;
+  if p_status not in ('open', 'in_progress', 'resolved', 'closed') then raise exception 'Invalid support status'; end if;
+  update public.support_requests set status = p_status, assigned_to = p_assigned_to, updated_at = now() where id = p_id returning * into updated;
+  if updated.id is null then raise exception 'Support request not found'; end if;
+  return updated;
+end;
+$$;
 alter table public.support_requests enable row level security;
 drop policy if exists support_requests_insert on public.support_requests;
 create policy support_requests_insert on public.support_requests for insert with check (consent = true and (user_id is null or user_id = auth.uid()));
 drop policy if exists support_requests_select on public.support_requests;
 create policy support_requests_select on public.support_requests for select using (user_id = auth.uid() or public.crm_has_role(array['admin', 'commercial_manager', 'commercial']));
+
+drop policy if exists support_requests_update on public.support_requests;
+create policy support_requests_update on public.support_requests for update using (public.crm_has_role(array['admin', 'commercial_manager', 'commercial'])) with check (public.crm_has_role(array['admin', 'commercial_manager', 'commercial']));
+
+drop policy if exists support_requests_update on public.support_requests;
+create policy support_requests_update on public.support_requests for update using (public.crm_has_role(array['admin', 'commercial_manager', 'commercial'])) with check (public.crm_has_role(array['admin', 'commercial_manager', 'commercial']));
