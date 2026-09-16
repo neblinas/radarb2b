@@ -7,13 +7,19 @@ import PublicPage from "@/components/PublicPage";
 import { supabase } from "@/lib/supabase";
 
 const knowledge = [
-  { terms: ["preco", "quanto custa", "custo", "planos", "free", "starter", "pro", "qualo preco"], title: "Planos e preços", answer: "O Radar B2B tem três planos: Free, sem custo para começar; Starter, 19 € por mês, com 200 pesquisas, 100 oportunidades, 25 pesquisas guardadas e 5 alertas; e Pro, 39 € por mês, com pesquisas ilimitadas, 500 oportunidades, 100 pesquisas guardadas e 20 alertas. Os impostos aplicáveis podem ser adicionados no pagamento.", },
-  { terms: ["dados", "fonte", "base", "portal"], title: "De onde vêm os dados?", answer: "A fonte principal é o Portal BASE. Os dados dependem da publicação oficial e da atualização disponível; confirma sempre o procedimento na fonte oficial." },
-  { terms: ["tempo real", "atualização", "atualizado", "frequência"], title: "O Radar B2B é tempo real?", answer: "Não. A base é atualizada de acordo com a disponibilidade da fonte pública. O produto não deve ser tratado como um feed instantâneo." },
-  { terms: ["quota", "limite", "pesquisas", "plano"], title: "Como funcionam os limites?", answer: "Os limites dependem do plano e são aplicados pelo backend. Consulta a área Conta para veres a utilização e o plano atual." },
-  { terms: ["cancelar", "subscrição", "fatura", "pagamento"], title: "Como gerir a subscrição?", answer: "A gestão de subscrição e faturação é feita através do portal seguro disponível na área Conta." },
+  { terms: ["preco", "quanto custa", "custo", "planos", "free", "starter", "pro", "qualo preco"], title: "Planos e preços", answer: "O Radar B2B tem três planos: Free, sem custo para começar; Starter, 19 € por mês, com 200 pesquisas, 100 oportunidades, 25 pesquisas guardadas e 5 alertas; e Pro, 39 € por mês, com pesquisas ilimitadas, 500 oportunidades, 100 pesquisas guardadas e 20 alertas. Os impostos aplicáveis podem ser adicionados no pagamento. Começa no Free e escolhe um plano pago quando precisares de mais capacidade." },
+  { terms: ["o que e", "o que faz", "radar", "plataforma", "servico", "negocio"], title: "O que é o Radar B2B?", answer: "É uma plataforma de inteligência comercial para contratação pública portuguesa. Ajuda empresas a descobrir procedimentos relevantes, perceber quem compra, acompanhar concorrência e organizar oportunidades num único espaço de trabalho." },
+  { terms: ["vantagem", "beneficio", "vale a pena", "ajuda empresa", "ganhar", "vender"], title: "Que vantagem oferece a uma empresa?", answer: "Reduz o tempo de pesquisa, ajuda a encontrar oportunidades antes de se perderem, dá contexto sobre entidades e concorrência e organiza o seguimento comercial. O valor está em transformar dados públicos dispersos numa rotina comercial mais focada." },
+  { terms: ["dados", "fonte", "base", "portal", "publico"], title: "De onde vêm os dados?", answer: "A fonte principal é o Portal BASE. O Radar B2B organiza informação pública; não revela dados privados nem desbloqueia informação reservada. Confirma sempre o procedimento e os documentos na fonte oficial." },
+  { terms: ["tempo real", "atualizacao", "atualizado", "frequencia"], title: "O Radar B2B é tempo real?", answer: "Não. A base é atualizada de acordo com a disponibilidade da fonte pública. A plataforma é ideal para acompanhamento e prospeção estruturada, mas não substitui a confirmação na fonte oficial." },
+  { terms: ["pesquisa", "procurar", "filtro", "cpv", "procedimento"], title: "O que posso pesquisar?", answer: "Podes pesquisar procedimentos por texto, tipo, datas e valores, e explorar empresas, entidades e CPVs relacionados. O plano Free permite experimentar o fluxo; os planos pagos dão mais capacidade para uma rotina comercial contínua." },
+  { terms: ["alerta", "notificacao", "avisar", "monitorizar"], title: "Para que servem os alertas?", answer: "Os alertas ajudam a acompanhar critérios comerciais sem repetir a pesquisa manualmente. São úteis quando tens mercados, tipos de procedimento ou temas que queres monitorizar de forma recorrente." },
+  { terms: ["quota", "limite", "pesquisas", "plano", "capacidade"], title: "Como funcionam os limites?", answer: "Os limites protegem a utilização e variam por plano. O Free serve para começar; o Starter aumenta a capacidade para equipas pequenas; o Pro foi pensado para acompanhamento comercial intensivo. A tua utilização privada só aparece depois de iniciares sessão." },
+  { terms: ["conta", "registo", "comecar", "experimentar", "aderir"], title: "Como começo?", answer: "Cria uma conta, experimenta o fluxo de pesquisa no Free e guarda apenas o que for relevante. Quando o Radar B2B fizer parte da tua rotina comercial, podes aumentar a capacidade para Starter ou Pro." },
+  { terms: ["cancelar", "subscricao", "fatura", "pagamento"], title: "Como gerir a subscrição?", answer: "A gestão de subscrição e faturação é feita através do portal seguro disponível na área Conta. Os planos pagos podem ser escolhidos quando precisares de maior capacidade." },
   { terms: ["privacidade", "rgpd", "dados pessoais", "apagamento"], title: "Como exerço os meus direitos?", answer: "Consulta a Política de privacidade. Para um pedido específico, envia um ticket nesta página e seleciona Privacidade/RGPD." },
-  { terms: ["erro", "incorreto", "procedimento", "dados"], title: "Como reportar um erro nos dados?", answer: "Inclui a referência do procedimento, a fonte oficial e uma descrição objetiva. Não envies passwords, tokens ou dados pessoais desnecessários." },
+  { terms: ["seguro", "seguranca", "privado", "confidencial"], title: "O Radar B2B mostra dados privados?", answer: "Não. O produto organiza dados públicos e protege os dados da conta através de autenticação, permissões e políticas de acesso. Não partilhes passwords, tokens ou informação confidencial num ticket." },
+  { terms: ["erro", "incorreto", "reportar", "problema"], title: "Como reportar um erro?", answer: "Inclui a referência do procedimento, a fonte oficial e uma descrição objetiva. Se a questão não ficar esclarecida, abre um ticket para acompanhamento humano." },
 ];
 
 export default function ContactPage() {
@@ -30,8 +36,8 @@ export default function ContactPage() {
     event.preventDefault();
     const match = knowledge.find((item) => item.terms.some((term) => normalize(question).includes(normalize(term))));
     setAnswer(match || {
-      title: "Vamos encaminhar a tua questão",
-      answer: "Não encontrei uma resposta segura na informação pública disponível. Consulta as Perguntas frequentes ou abre um ticket com o máximo de contexto possível; a equipa poderá acompanhar o pedido.",
+      title: "Vamos encontrar a melhor resposta",
+      answer: "Essa questão precisa de contexto específico. Posso esclarecer o conceito, vantagens, dados públicos, pesquisa, alertas e planos do Radar B2B, mas não tenho acesso a dados privados nem devo revelar funcionalidades reservadas a planos pagos. Consulta a FAQ ou abre um ticket para a equipa te orientar para a solução mais adequada.",
     });
   }
 
