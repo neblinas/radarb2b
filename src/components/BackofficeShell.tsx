@@ -2,20 +2,23 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BellRing, BriefcaseBusiness, Building2, ClipboardList, FileCheck2, LayoutDashboard, LifeBuoy, LogOut, Menu, Search, Settings2, ShieldCheck, UserPlus, Users, X } from "lucide-react";
+import { BarChart3, BellRing, BriefcaseBusiness, Building2, ClipboardList, LayoutDashboard, LifeBuoy, LogOut, Menu, Search, Settings2, ShieldCheck, UserPlus, Users, X } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export const backofficeNav = [
   { label: "Visão geral", href: "/backoffice", icon: LayoutDashboard },
+  { label: "Os meus dados", href: "/perfil", icon: Settings2 },
   { label: "Clientes e colaboradores", href: "/backoffice/contas", icon: Users },
   { label: "Novo colaborador", href: "/backoffice/colaboradores/novo", icon: UserPlus },
   { label: "Planos e utilização", href: "/backoffice/planos", icon: BarChart3 },
+  { label: "Ganhos da equipa", href: "/backoffice/comissoes", icon: BarChart3 },
   { label: "Oportunidades", href: "/backoffice/oportunidades", icon: Building2 },
-  { label: "Leads comerciais", href: "/backoffice/leads", icon: BriefcaseBusiness },
+    { label: "Leads comerciais", href: "/backoffice/leads", icon: BriefcaseBusiness },
+  { label: "Pesquisar empresas", href: "/backoffice/prospeccao", icon: Search },
+    { label: "Dashboard de prospeção", href: "/backoffice/prospeccao/dashboard", icon: BarChart3 },
   { label: "Tickets de suporte", href: "/backoffice/tickets", icon: LifeBuoy },
   { label: "Atividade", href: "/backoffice/atividade", icon: ClipboardList },
-  { label: "Verificação", href: "/backoffice/verificacao", icon: FileCheck2 },
 ];
 
 export default function BackofficeShell({ children, email, role }: { children: ReactNode; email: string; role: string }) {

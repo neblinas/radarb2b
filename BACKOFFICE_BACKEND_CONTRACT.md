@@ -31,6 +31,14 @@ O back-office já tem navegação e vistas protegidas por `auth.users.raw_app_me
 
 Todas as funções devem validar a sessão no servidor, role, organização, quotas de operação e idempotência. Toda escrita deve criar `admin_audit_log`.
 
+## Prospeção comercial e comissões
+
+- `sales_prospects`, `sales_prospect_score_components`, `sales_activities`, `sales_assignment_history`: funil de prospeção por organização, com atribuição a um comercial.
+- `company_public_profiles`, `company_public_contacts`: website confirmado manualmente e contactos institucionais extraídos apenas de páginas públicas (Edge Function `discover-company-contacts`, com guarda SSRF e respeito por `robots.txt`).
+- `company_prospect_scores` (materialized view): score explicável 0–100 calculado a partir de atividade real em contratação pública. Atualizar via `refresh_company_prospect_scores()`.
+- RPCs: `prospect_queue`, `prospect_snapshot`, `prospect_score_components`, `prospect_claim`, `prospect_release`, `prospect_add_activity`, `prospect_confirm_website`, `prospect_metrics`.
+- `commercial_commission_ledger` + `commercial_commission_summary`: valores de assinaturas diretas e de equipa atribuídos por beneficiário.
+
 ## Bloqueios atuais
 
 Sem estas tabelas/RPCs no Supabase, as vistas mostram estados explícitos e não inventam atividade, notas, convites ou oportunidades. Preços, Stripe, roles e permissões nunca devem ser alterados diretamente pelo cliente.
