@@ -111,6 +111,21 @@ describe("ProspectQueue", () => {
     expect(screen.queryByRole("button", { name: /Remover/i })).not.toBeInTheDocument();
   });
 
+  it("deixa um gestor remover um prospect de outro comercial", async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: { id: "manager-1", app_metadata: { role: "commercial_manager" } } } });
+    mocks.rpc
+      .mockResolvedValueOnce({ data: [prospectRow({ assigned_to: "user-2", prospect_id: "prospect-2" })], error: null })
+      .mockResolvedValueOnce({ data: prospectRow(), error: null })
+      .mockResolvedValueOnce({ data: [prospectRow()], error: null });
+
+    render(<ProspectQueue />);
+
+    const releaseButton = await screen.findByRole("button", { name: /Remover/i });
+    await userEvent.click(releaseButton);
+
+    expect(mocks.rpc).toHaveBeenCalledWith("prospect_release", { p_prospect_id: "prospect-2" });
+  });
+
   it("mostra mensagem quando a migração não está aplicada", async () => {
     mocks.rpc.mockResolvedValue({ data: null, error: { message: "not found" } });
 
