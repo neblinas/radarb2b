@@ -6,6 +6,7 @@ import ProspectQueue from "@/components/ProspectQueue";
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
+  getUser: vi.fn(),
 }));
 
 vi.mock("next/link", () => ({
@@ -26,6 +27,9 @@ vi.mock("next/link", () => ({
 vi.mock("@/lib/supabase", () => ({
   supabase: {
     rpc: mocks.rpc,
+    auth: {
+      getUser: mocks.getUser,
+    },
   },
 }));
 
@@ -54,6 +58,7 @@ function prospectRow(overrides: Record<string, unknown> = {}) {
 describe("ProspectQueue", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   });
 
   it("apresenta a fila e sugere o próximo prospect quente", async () => {
@@ -81,6 +86,29 @@ describe("ProspectQueue", () => {
     await userEvent.click(claimButton);
 
     expect(mocks.rpc).toHaveBeenCalledWith("prospect_claim", { p_company_id: "company-1" });
+  });
+
+  it("remove um prospect assumido por mim através da RPC", async () => {
+    mocks.rpc
+      .mockResolvedValueOnce({ data: [prospectRow({ assigned_to: "user-1", prospect_id: "prospect-1" })], error: null })
+      .mockResolvedValueOnce({ data: prospectRow(), error: null })
+      .mockResolvedValueOnce({ data: [prospectRow()], error: null });
+
+    render(<ProspectQueue />);
+
+    const releaseButton = await screen.findByRole("button", { name: /Remover/i });
+    await userEvent.click(releaseButton);
+
+    expect(mocks.rpc).toHaveBeenCalledWith("prospect_release", { p_prospect_id: "prospect-1" });
+  });
+
+  it("não mostra botão de remover para prospects de outro comercial", async () => {
+    mocks.rpc.mockResolvedValue({ data: [prospectRow({ assigned_to: "user-2", prospect_id: "prospect-2" })], error: null });
+
+    render(<ProspectQueue />);
+
+    expect(await screen.findByText("Empresa Alfa")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Remover/i })).not.toBeInTheDocument();
   });
 
   it("mostra mensagem quando a migração não está aplicada", async () => {
