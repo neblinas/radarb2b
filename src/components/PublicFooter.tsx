@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { legalOperator } from "@/lib/legal";
 
 const legalLinks = [
   ["Sobre nós", "/sobre"],
@@ -18,7 +17,7 @@ export default function PublicFooter() {
         <div>
           <p className="text-sm font-bold tracking-[0.16em] text-white">RADAR B2B</p>
           <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">Inteligência comercial para contratação pública portuguesa.</p>
-          <p className="mt-4 text-xs text-slate-600">© {new Date().getFullYear()} Radar B2B · {legalOperator.name}, ENI · {legalOperator.country}</p>
+          <p className="mt-4 text-xs text-slate-600">© {new Date().getFullYear()} Radar B2B · Portugal</p>
         </div>
         <nav aria-label="Informação legal" className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-400">
           {legalLinks.map(([label, href]) => <Link key={href} href={href} className="transition hover:text-cyan-300">{label}</Link>)}

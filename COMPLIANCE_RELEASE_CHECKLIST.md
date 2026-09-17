@@ -24,6 +24,8 @@ Este checklist acompanha a implementação técnica. Não substitui revisão jur
 
 ## Back-office comercial
 
+- [ ] Aplicar as migrações por ordem no SQL Editor: `SUPABASE_CRM_MIGRATION.sql`, `SUPABASE_COMMERCIAL_GROWTH_MIGRATION.sql`, `SUPABASE_PROSPECTING_MIGRATION.sql`, `SUPABASE_PROSPECTING_PATCH_20260917.sql`, `SUPABASE_PROSPECTING_DASHBOARD_20260918.sql`.
+- [ ] Agendar `refresh_company_prospect_scores()` (após importações ou diariamente) para manter os scores de prospeção atualizados.
 - [ ] Criar tabelas `organizations`, `commercial_members`, `company_verifications`, `verified_domains` e `admin_audit_log`.
 - [ ] Criar RPCs para convites, verificação, suspensão, notas e auditoria.
 - [ ] Aplicar RLS por organização e role; nunca confiar apenas no cliente.

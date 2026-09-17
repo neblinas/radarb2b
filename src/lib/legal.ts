@@ -1,7 +1,7 @@
 export const legalOperator = {
-  name: "Tiago Manuel Ferreira Dias",
-  legalForm: "Empresário em Nome Individual (ENI)",
-  nif: "222184680",
+  name: "Radar B2B",
+  legalForm: "designação comercial provisória",
+  nif: null,
   country: "Portugal",
   address: null,
   supportEmail: null,
