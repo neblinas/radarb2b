@@ -24,4 +24,6 @@ Set the service role secret with the allowed custom name:
 supabase secrets set RADAR_SERVICE_ROLE_KEY=<service-role-key> --project-ref swelyfjlnvpxgahchpxc
 ```
 
+The function also requires `RESEND_API_KEY`. Optionally set `RESEND_FROM_EMAIL` to a verified Resend sender. Without a domain, the default test sender is `Radar B2B <onboarding@resend.dev>` and Resend may restrict recipients to the account owner.
+
 The Supabase Auth invite email template must use `{{ .ConfirmationURL }}` and the redirect URL must be allow-listed in Authentication URL Configuration.

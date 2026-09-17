@@ -10,7 +10,9 @@ serve(async (request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("RADAR_SERVICE_ROLE_KEY")!;
-    if (!supabaseUrl || !anonKey || !serviceRoleKey) throw new Error("Supabase function secrets are not configured");
+    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
+    const resendFrom = Deno.env.get("RESEND_FROM_EMAIL") || "Radar B2B <onboarding@resend.dev>";
+    if (!supabaseUrl || !anonKey || !serviceRoleKey || !resendApiKey) throw new Error("Supabase function secrets are not configured");
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization");
 
@@ -35,11 +37,38 @@ serve(async (request) => {
     if (!organization) throw new Error("CRM organization not configured");
 
     const redirectTo = `${Deno.env.get("SITE_URL") || "https://radarb2b-iota.vercel.app"}/login?mode=reset`;
-    const { data: invited, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      redirectTo,
-      data: { full_name: name, phone, nif, crm_role: requestedRole, organization_id: organization.id },
+    const { data: invited, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      email_confirm: false,
+      user_metadata: { full_name: name, phone, nif, crm_role: requestedRole, organization_id: organization.id },
     });
-    if (inviteError) throw inviteError;
+    if (createError || !invited.user) throw createError || new Error("Could not create invited user");
+
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: { redirectTo, data: { full_name: name, phone, nif, crm_role: requestedRole, organization_id: organization.id } },
+    });
+    if (linkError || !linkData.properties?.action_link) {
+      await adminClient.auth.admin.deleteUser(invited.user.id);
+      throw linkError || new Error("Could not generate activation link");
+    }
+
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: resendFrom,
+        to: [email],
+        subject: "A tua conta Radar B2B foi criada",
+        html: `<h2>Bem-vindo ao Radar B2B</h2><p>Olá ${name},</p><p>A tua conta de colaborador foi criada com sucesso. Usa o botão abaixo para ativar a conta e definir a tua palavra-passe.</p><p><a href="${linkData.properties.action_link}">Ativar a minha conta</a></p><p>Se não reconheces este convite, ignora este email.</p>`,
+      }),
+    });
+    if (!emailResponse.ok) {
+      const emailError = await emailResponse.text();
+      await adminClient.auth.admin.deleteUser(invited.user.id);
+      throw new Error(`Resend email failed: ${emailError}`);
+    }
 
     const { error: memberError } = await adminClient.from("organization_members").upsert({ organization_id: organization.id, user_id: invited.user.id, role: requestedRole, status: "invited", invited_by: actor.id }, { onConflict: "organization_id,user_id" });
     if (memberError) {
