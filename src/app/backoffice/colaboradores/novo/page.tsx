@@ -29,8 +29,18 @@ export default function NewCollaboratorPage() {
     setError("");
     const { data, error: invokeError } = await supabase.functions.invoke("invite-commercial-member", { body: form });
     if (invokeError || data?.error) {
+      let detailedError = data?.error;
+      if (!detailedError && invokeError && "context" in invokeError) {
+        try {
+          const response = (invokeError as { context?: Response }).context;
+          const body = response ? await response.clone().json() as { error?: string } : null;
+          detailedError = body?.error;
+        } catch {
+          detailedError = undefined;
+        }
+      }
       setStatus("error");
-      setError(data?.error || invokeError?.message || "Não foi possível criar o colaborador.");
+      setError(detailedError || invokeError?.message || "Não foi possível criar o colaborador.");
       return;
     }
     setStatus("sent");
