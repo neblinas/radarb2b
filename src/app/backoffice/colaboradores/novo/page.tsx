@@ -33,8 +33,12 @@ export default function NewCollaboratorPage() {
       if (!detailedError && invokeError && "context" in invokeError) {
         try {
           const response = (invokeError as { context?: Response }).context;
-          const body = response ? await response.clone().json() as { error?: string } : null;
-          detailedError = body?.error;
+          const body = response ? await response.clone().text() : "";
+          try {
+            detailedError = (JSON.parse(body) as { error?: string }).error;
+          } catch {
+            detailedError = body || undefined;
+          }
         } catch {
           detailedError = undefined;
         }
