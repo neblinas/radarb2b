@@ -14,6 +14,7 @@ import {
   Landmark,
   SearchCheck,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 
 const initialKpis = [
@@ -71,6 +72,20 @@ const modules = [
       "Gere os alertas automáticos criados a partir das tuas pesquisas.",
     icon: BellRing,
     href: "/alertas",
+  },
+  {
+    title: "Planos Radar B2B",
+    description:
+      "Compara a capacidade de pesquisa e acompanhamento de cada plano.",
+    icon: ShieldCheck,
+    href: "/planos",
+  },
+  {
+    title: "Programa comercial",
+    description:
+      "Apresenta o Radar B2B, cresce com a tua equipa e acompanha os teus ganhos.",
+    icon: Users,
+    href: "/recrutamento",
   },
 ];
 
@@ -249,14 +264,15 @@ export default function Home() {
                     searchResults.procedures.map((item) => (
                       <Link
                         key={item.id}
-                        href={`/procedimentos/${item.id}`}
+                        href={`/login?next=${encodeURIComponent(`/procedimentos/${item.id}`)}`}
                         className="mb-2 block rounded-xl border border-transparent bg-slate-800/60 p-3 transition hover:border-cyan-500/20 hover:bg-slate-800"
                       >
                         <p className="text-sm font-medium text-white">
-                          {item.object || "Sem objeto"}
+                          {(item.object || "Sem objeto").slice(0, 120)}
+                          {(item.object || "").length > 120 ? "…" : ""}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          {item.procedure_type || "Procedimento"}
+                          {item.procedure_type || "Procedimento"} · Saber mais
                         </p>
                       </Link>
                     ))

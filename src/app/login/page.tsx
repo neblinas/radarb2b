@@ -82,6 +82,9 @@ export default function LoginPage() {
     setMessage("");
     setError("");
 
+    const next = new URLSearchParams(window.location.search).get("next");
+    const destination = next?.startsWith("/") ? next : "/";
+
     if (isRecovery) {
       const { error: updateError } = await supabase.auth.updateUser({
         password,
@@ -113,7 +116,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
-        router.push("/");
+        router.push(destination);
         router.refresh();
         return;
       }
@@ -133,7 +136,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/");
+      router.push(destination);
       router.refresh();
       return;
     }

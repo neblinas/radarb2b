@@ -6,6 +6,7 @@ import {
   BellRing,
   BookmarkCheck,
   ChartNoAxesCombined,
+  CircleDollarSign,
   Menu,
   SearchCheck,
   Settings,
@@ -40,6 +41,11 @@ const navItems = [
     label: "Alertas",
     href: "/alertas",
     icon: BellRing,
+  },
+  {
+    label: "Planos e preços",
+    href: "/planos",
+    icon: CircleDollarSign,
   },
 ];
 

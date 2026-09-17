@@ -132,7 +132,7 @@ describe("ContaPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Starter")).toBeInTheDocument();
     expect(screen.getByText("Pro")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Escolher Pro" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Comparar planos" })).toHaveLength(2);
   });
 
   it("mostra a gestão de subscrição para um cliente pago", async () => {

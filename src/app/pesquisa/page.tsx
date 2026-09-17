@@ -614,6 +614,14 @@ useEffect(() => {
           {hasActiveFilters && usageError ? (
             <div className="mt-4 rounded-xl border border-amber-900/50 bg-amber-950/20 px-4 py-3 text-sm text-amber-300">
               {usageError}
+              {!sessionEmail ? (
+                <Link
+                  href={`/login?next=${encodeURIComponent(`/pesquisa?${new URLSearchParams({ query, procedureType, dateFrom, dateTo, valueFrom, valueTo }).toString()}`)}`}
+                  className="mt-3 inline-flex items-center rounded-lg bg-cyan-400 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-300"
+                >
+                  Desbloquear pesquisa gratuita
+                </Link>
+              ) : null}
             </div>
           ) : null}
         </section>

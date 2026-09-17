@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import SaveOpportunityButton from "../SaveOpportunityButton";
+import ProcedureAccessGate from "../ProcedureAccessGate";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -239,6 +240,7 @@ export default async function ProcedurePage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[#06101f] text-slate-100">
+      <ProcedureAccessGate>
       <div className="mx-auto max-w-[1500px] px-5 py-7 sm:px-8 lg:px-10">
         <Link
           href="/"
@@ -289,6 +291,18 @@ export default async function ProcedurePage({ params }: PageProps) {
                       {formatDate(procedure.publication_date)}
                     </strong>
                   </span>
+
+                  {procedure.source_url ? (
+                    <a
+                      href={procedure.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 font-medium text-cyan-400 hover:text-cyan-300"
+                    >
+                      Abrir concurso no BASE
+                      <ExternalLink size={13} />
+                    </a>
+                  ) : null}
                 </div>
 
                 {procedure.description ? (
@@ -919,6 +933,7 @@ export default async function ProcedurePage({ params }: PageProps) {
           </aside>
         </div>
       </div>
+      </ProcedureAccessGate>
     </main>
   );
 }
