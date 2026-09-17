@@ -118,7 +118,11 @@ export default function PlansPage() {
                 ) : null}
 
                 <h2 className="text-xl font-semibold text-white">{plan.name}</h2>
-                <p className="mt-5 text-4xl font-semibold text-white">{formatEuros(priceValue)}<span className="text-sm font-normal text-slate-500">{priceSuffix}</span></p>
+                <p className="mt-5 text-4xl font-semibold text-white">
+                  {formatEuros(priceValue)}
+                  <span className="text-sm font-normal text-slate-500">{priceSuffix}</span>
+                  {plan.id !== "free" ? <span className="ml-1 text-xs font-normal text-slate-500">+ IVA</span> : null}
+                </p>
                 {showAnnual ? (
                   <p className="mt-2 text-xs text-emerald-300">Poupa {formatEuros(saving)} por ano · equivale a {formatEuros(Math.round(plan.priceAnnual / 12))}/mês</p>
                 ) : (
@@ -156,7 +160,7 @@ export default function PlansPage() {
 
         <div className="mt-8 flex items-start gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/[0.06] p-5 text-sm leading-6 text-slate-400">
           <ShieldCheck size={19} className="mt-0.5 shrink-0 text-cyan-300" />
-          <p>Os limites aplicáveis são validados no backend. A seleção de um plano pago abre o checkout seguro da Stripe com o valor correspondente.</p>
+          <p>Os preços apresentados não incluem IVA. Os limites aplicáveis são validados no backend. A seleção de um plano pago abre o checkout seguro da Stripe com o valor correspondente.</p>
         </div>
       </section>
     </main>
