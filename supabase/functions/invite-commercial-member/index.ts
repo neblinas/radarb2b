@@ -9,7 +9,7 @@ serve(async (request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const serviceRoleKey = Deno.env.get("RADAR_SERVICE_ROLE_KEY")!;
     if (!supabaseUrl || !anonKey || !serviceRoleKey) throw new Error("Supabase function secrets are not configured");
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization");
