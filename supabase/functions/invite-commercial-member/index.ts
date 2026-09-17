@@ -10,13 +10,14 @@ serve(async (request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) throw new Error("Supabase function secrets are not configured");
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization");
 
     const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
     const { data: { user: actor } } = await userClient.auth.getUser();
     const actorRole = typeof actor?.app_metadata?.role === "string" ? actor.app_metadata.role : "";
-    if (!actor || !allowedRoles.has(actorRole)) throw new Error("CRM access denied");
+    if (!actor || !allowedRoles.has(actorRole)) throw new Error("CRM access denied: admin or commercial_manager role required");
 
     const body = await request.json();
     const name = String(body.name || "").trim();

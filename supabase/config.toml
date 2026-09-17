@@ -1,0 +1,4 @@
+project_id = "swelyfjlnvpxgahchpxc"
+
+[functions.invite-commercial-member]
+verify_jwt = false
