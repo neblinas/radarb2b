@@ -1,5 +1,5 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProspectQueue from "@/components/ProspectQueue";
@@ -45,6 +45,7 @@ function prospectRow(overrides: Record<string, unknown> = {}) {
     total_award_value: 350000,
     last_participation: "2026-09-01",
     cpv_codes: ["45200000"],
+    categories: ["SOFTWARE"],
     prospect_id: null,
     prospect_status: null,
     assigned_to: null,
@@ -55,14 +56,32 @@ function prospectRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+// O componente chama duas RPCs: prospect_categories (lista de ramos) e
+// prospect_queue (a fila). Os mocks são sensíveis ao nome da RPC para que
+// 'prospect_categories' devolva sempre um array de strings.
+function mockCategories(categories: string[] = ["SOFTWARE", "HARDWARE"]) {
+  mocks.rpc.mockImplementation((name: string) =>
+    Promise.resolve(
+      name === "prospect_categories" ? { data: categories, error: null } : { data: null, error: null },
+    ),
+  );
+}
+
 describe("ProspectQueue", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    mockCategories();
   });
 
   it("apresenta a fila e sugere o próximo prospect quente", async () => {
-    mocks.rpc.mockResolvedValue({ data: [prospectRow()], error: null });
+    mocks.rpc.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "prospect_categories"
+          ? { data: ["SOFTWARE"], error: null }
+          : { data: [prospectRow()], error: null },
+      ),
+    );
 
     render(<ProspectQueue />);
 
@@ -75,10 +94,13 @@ describe("ProspectQueue", () => {
   });
 
   it("assume um prospect disponível através da RPC", async () => {
-    mocks.rpc
-      .mockResolvedValueOnce({ data: [prospectRow()], error: null })
-      .mockResolvedValueOnce({ data: prospectRow(), error: null })
-      .mockResolvedValueOnce({ data: [prospectRow({ assigned_to: "user-1" })], error: null });
+    let queueCalls = 0;
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === "prospect_categories") return Promise.resolve({ data: ["SOFTWARE"], error: null });
+      queueCalls += 1;
+      const payload = queueCalls === 1 ? [prospectRow()] : [prospectRow({ assigned_to: "user-1" })];
+      return Promise.resolve({ data: payload, error: null });
+    });
 
     render(<ProspectQueue />);
 
@@ -89,10 +111,15 @@ describe("ProspectQueue", () => {
   });
 
   it("remove um prospect assumido por mim através da RPC", async () => {
-    mocks.rpc
-      .mockResolvedValueOnce({ data: [prospectRow({ assigned_to: "user-1", prospect_id: "prospect-1" })], error: null })
-      .mockResolvedValueOnce({ data: prospectRow(), error: null })
-      .mockResolvedValueOnce({ data: [prospectRow()], error: null });
+    let queueCalls = 0;
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === "prospect_categories") return Promise.resolve({ data: ["SOFTWARE"], error: null });
+      queueCalls += 1;
+      const payload = queueCalls === 1
+        ? [prospectRow({ assigned_to: "user-1", prospect_id: "prospect-1" })]
+        : [prospectRow()];
+      return Promise.resolve({ data: payload, error: null });
+    });
 
     render(<ProspectQueue />);
 
@@ -103,7 +130,13 @@ describe("ProspectQueue", () => {
   });
 
   it("não mostra botão de remover para prospects de outro comercial", async () => {
-    mocks.rpc.mockResolvedValue({ data: [prospectRow({ assigned_to: "user-2", prospect_id: "prospect-2" })], error: null });
+    mocks.rpc.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "prospect_categories"
+          ? { data: ["SOFTWARE"], error: null }
+          : { data: [prospectRow({ assigned_to: "user-2", prospect_id: "prospect-2" })], error: null },
+      ),
+    );
 
     render(<ProspectQueue />);
 
@@ -113,10 +146,15 @@ describe("ProspectQueue", () => {
 
   it("deixa um gestor remover um prospect de outro comercial", async () => {
     mocks.getUser.mockResolvedValue({ data: { user: { id: "manager-1", app_metadata: { role: "commercial_manager" } } } });
-    mocks.rpc
-      .mockResolvedValueOnce({ data: [prospectRow({ assigned_to: "user-2", prospect_id: "prospect-2" })], error: null })
-      .mockResolvedValueOnce({ data: prospectRow(), error: null })
-      .mockResolvedValueOnce({ data: [prospectRow()], error: null });
+    let queueCalls = 0;
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === "prospect_categories") return Promise.resolve({ data: ["SOFTWARE"], error: null });
+      queueCalls += 1;
+      const payload = queueCalls === 1
+        ? [prospectRow({ assigned_to: "user-2", prospect_id: "prospect-2" })]
+        : [prospectRow()];
+      return Promise.resolve({ data: payload, error: null });
+    });
 
     render(<ProspectQueue />);
 
@@ -126,8 +164,36 @@ describe("ProspectQueue", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("prospect_release", { p_prospect_id: "prospect-2" });
   });
 
+  it("filtra por ramo de negócio através da RPC", async () => {
+    mocks.rpc.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "prospect_categories"
+          ? { data: ["SOFTWARE", "HARDWARE"], error: null }
+          : { data: [prospectRow()], error: null },
+      ),
+    );
+
+    render(<ProspectQueue />);
+
+    const categorySelect = await screen.findByLabelText("Ramo de negócio");
+    await userEvent.selectOptions(categorySelect, "SOFTWARE");
+
+    await waitFor(() =>
+      expect(mocks.rpc).toHaveBeenCalledWith(
+        "prospect_queue",
+        expect.objectContaining({ p_category: "SOFTWARE" }),
+      ),
+    );
+  });
+
   it("mostra mensagem quando a migração não está aplicada", async () => {
-    mocks.rpc.mockResolvedValue({ data: null, error: { message: "not found" } });
+    mocks.rpc.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "prospect_categories"
+          ? { data: [], error: null }
+          : { data: null, error: { message: "not found" } },
+      ),
+    );
 
     render(<ProspectQueue />);
 

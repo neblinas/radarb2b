@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AppNavigation from "@/components/AppNavigation";
 import CookieConsent from "@/components/CookieConsent";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import PublicFooter from "@/components/PublicFooter";
 import { brand } from "@/lib/brand";
 import "./globals.css";
@@ -76,6 +77,7 @@ export default function RootLayout({
         {children}
         <PublicFooter />
         <CookieConsent />
+        <GoogleAnalytics />
       </body>
     </html>
   );
