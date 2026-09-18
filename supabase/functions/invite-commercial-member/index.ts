@@ -11,7 +11,7 @@ serve(async (request) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("RADAR_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
-    const resendFrom = Deno.env.get("RESEND_FROM_EMAIL") || "Radar B2B <onboarding@resend.dev>";
+    const resendFrom = Deno.env.get("RESEND_FROM_EMAIL") || "Adjudata <onboarding@resend.dev>";
     if (!supabaseUrl || !anonKey || !serviceRoleKey || !resendApiKey) throw new Error("Supabase function secrets are not configured");
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization");
@@ -36,7 +36,7 @@ serve(async (request) => {
     const { data: organization } = await adminClient.from("organizations").select("id").limit(1).single();
     if (!organization) throw new Error("CRM organization not configured");
 
-    const redirectTo = `${Deno.env.get("SITE_URL") || "https://radarb2b-iota.vercel.app"}/login?mode=reset`;
+    const redirectTo = `${Deno.env.get("SITE_URL") || "https://adjudata.pt"}/login?mode=reset`;
     const { data: invited, error: createError } = await adminClient.auth.admin.createUser({
       email,
       email_confirm: false,
@@ -60,8 +60,8 @@ serve(async (request) => {
       body: JSON.stringify({
         from: resendFrom,
         to: [email],
-        subject: "A tua conta Radar B2B foi criada",
-        html: `<h2>Bem-vindo ao Radar B2B</h2><p>Olá ${name},</p><p>A tua conta de colaborador foi criada com sucesso. Usa o botão abaixo para ativar a conta e definir a tua palavra-passe.</p><p><a href="${linkData.properties.action_link}">Ativar a minha conta</a></p><p>Se não reconheces este convite, ignora este email.</p>`,
+                subject: "A tua conta Adjudata foi criada",
+        html: `<h2>Bem-vindo ao Adjudata</h2><p>Olá ${name},</p><p>A tua conta de colaborador foi criada com sucesso. Usa o botão abaixo para ativar a conta e definir a tua palavra-passe.</p><p><a href="${linkData.properties.action_link}">Ativar a minha conta</a></p><p>Se não reconheces este convite, ignora este email.</p>`,
       }),
     });
     if (!emailResponse.ok) {

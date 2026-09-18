@@ -84,7 +84,7 @@ export default async function ProcedurePage({ params }: PageProps) {
 
           <div className="mt-10 rounded-3xl border border-red-900/50 bg-red-950/20 p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">
-              Radar B2B
+              Adjudata
             </p>
             <h1 className="mt-3 text-2xl font-semibold text-white">
               Procedimento não encontrado

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Check, Cookie, Settings2, X } from "lucide-react";
+import { brand } from "@/lib/brand";
 
 type Consent = {
   necessary: true;
@@ -83,7 +84,7 @@ export default function CookieConsent() {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-white">Privacidade no Radar B2B</p>
+              <p className="text-sm font-semibold text-white">Privacidade no {brand.name}</p>
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 Usamos apenas armazenamento necessário para autenticação e funcionamento. Cookies de análise ou marketing só serão ativados com a tua autorização.
               </p>

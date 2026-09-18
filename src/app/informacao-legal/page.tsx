@@ -10,7 +10,7 @@ import {
 export const metadata: Metadata = {
   title: "Informação legal",
   description:
-    "Identificação do operador do Radar B2B e informação legal, nos termos do artigo 10.º do Decreto-Lei n.º 7/2004.",
+    "Identificação do operador do Adjudata e informação legal, nos termos do artigo 10.º do Decreto-Lei n.º 7/2004.",
 };
 
 function Field({ label, value }: { label: string; value: string | null }) {
@@ -38,7 +38,7 @@ export default function LegalInfoPage() {
         <p>
           Nos termos do artigo 10.º do Decreto-Lei n.º 7/2004 (comércio
           eletrónico), disponibilizamos a identificação do prestador de serviços
-          e a informação relevante sobre a utilização do Radar B2B.
+          e a informação relevante sobre a utilização do Adjudata.
         </p>
 
         {!complete ? (

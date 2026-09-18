@@ -1,31 +1,31 @@
-ï»¿# CONTRIBUTING.md
+# CONTRIBUTING.md
 
-## Desenvolvimento do Radar B2B
+## Desenvolvimento do Adjudata
 
 Este projeto utiliza um fluxo baseado em GitHub Issues, branches e Pull Requests.
 
 ## Regra principal
 
-NÃ£o desenvolver diretamente em main para trabalho normal.
+Não desenvolver diretamente em main para trabalho normal.
 
-Fluxo obrigatÃ³rio:
+Fluxo obrigatório:
 
-Issue -> Branch -> ImplementaÃ§Ã£o -> Testes -> Pull Request -> Merge -> Deploy
+Issue -> Branch -> Implementação -> Testes -> Pull Request -> Merge -> Deploy
 
 ## 1. Criar uma Issue
 
-Toda correÃ§Ã£o, melhoria, refactor ou nova funcionalidade deve comeÃ§ar por uma GitHub Issue.
+Toda correção, melhoria, refactor ou nova funcionalidade deve começar por uma GitHub Issue.
 
 A Issue deve indicar:
 - objetivo;
 - problema a resolver;
-- Ã¢mbito;
-- critÃ©rios de aceitaÃ§Ã£o;
+- âmbito;
+- critérios de aceitação;
 - riscos relevantes.
 
 ## 2. Criar uma branch
 
-Usar uma branch associada Ã  Issue.
+Usar uma branch associada à Issue.
 
 Exemplos:
 - feat/issue-12-admin-dashboard
@@ -36,13 +36,13 @@ Exemplos:
 
 ## 3. Implementar
 
-A alteraÃ§Ã£o deve manter-se dentro do Ã¢mbito da Issue.
+A alteração deve manter-se dentro do âmbito da Issue.
 
 Evitar:
-- refactors paralelos desnecessÃ¡rios;
-- novas dependÃªncias sem justificaÃ§Ã£o;
-- alteraÃ§Ãµes de comportamento nÃ£o relacionadas;
-- alteraÃ§Ãµes diretas de produÃ§Ã£o.
+- refactors paralelos desnecessários;
+- novas dependências sem justificação;
+- alterações de comportamento não relacionadas;
+- alterações diretas de produção.
 
 ## 4. Validar
 
@@ -50,23 +50,23 @@ Antes de abrir um Pull Request, executar pelo menos:
 
 npm run build
 
-Quando estiverem configurados, executar tambÃ©m:
+Quando estiverem configurados, executar também:
 - lint;
-- testes unitÃ¡rios;
-- testes de integraÃ§Ã£o;
-- testes end-to-end aplicÃ¡veis.
+- testes unitários;
+- testes de integração;
+- testes end-to-end aplicáveis.
 
-Fluxos crÃ­ticos devem ser testados manualmente quando necessÃ¡rio.
+Fluxos críticos devem ser testados manualmente quando necessário.
 
 ## 5. Pull Request
 
 Cada Pull Request deve:
-- ter tÃ­tulo claro;
+- ter título claro;
 - explicar o que mudou;
 - indicar riscos relevantes;
 - listar testes efetuados;
 - referenciar a Issue correspondente;
-- incluir "Closes #N" para fechar automaticamente a Issue apÃ³s merge.
+- incluir "Closes #N" para fechar automaticamente a Issue após merge.
 
 Exemplo:
 
@@ -74,23 +74,23 @@ Closes #12
 
 ## 6. Merge
 
-SÃ³ fazer merge quando:
+Só fazer merge quando:
 - build passa;
-- testes aplicÃ¡veis passam;
-- nÃ£o existem regressÃµes conhecidas;
-- seguranÃ§a nÃ£o foi degradada;
-- alteraÃ§Ãµes estÃ£o dentro do Ã¢mbito da Issue;
-- revisÃ£o foi concluÃ­da.
+- testes aplicáveis passam;
+- não existem regressões conhecidas;
+- segurança não foi degradada;
+- alterações estão dentro do âmbito da Issue;
+- revisão foi concluída.
 
 ## 7. Deploy
 
-O deploy de produÃ§Ã£o Ã© feito a partir de main.
+O deploy de produção é feito a partir de main.
 
-AlteraÃ§Ãµes normais nÃ£o devem ser enviadas diretamente para main.
+Alterações normais não devem ser enviadas diretamente para main.
 
-## SeguranÃ§a
+## Segurança
 
-Nunca incluir no repositÃ³rio:
+Nunca incluir no repositório:
 - Supabase service role keys;
 - Stripe secret keys;
 - webhook secrets;
@@ -98,75 +98,75 @@ Nunca incluir no repositÃ³rio:
 - passwords;
 - ficheiros .env com secrets.
 
-AlteraÃ§Ãµes relacionadas com:
-- autenticaÃ§Ã£o;
+Alterações relacionadas com:
+- autenticação;
 - RLS;
-- permissÃµes;
+- permissões;
 - Stripe;
 - billing;
 - quotas;
 - roles administrativas;
 
-devem receber validaÃ§Ã£o especÃ­fica antes de merge.
+devem receber validação específica antes de merge.
 
 ## UI e UX
 
-AlteraÃ§Ãµes de interface devem:
+Alterações de interface devem:
 - ser responsivas;
 - preservar acessibilidade;
 - preservar desempenho;
-- evitar animaÃ§Ãµes excessivas;
+- evitar animações excessivas;
 - usar loading states adequados;
-- usar skeletons apenas quando forem Ãºteis;
-- usar lazy loading apenas quando trouxer benefÃ­cio real;
+- usar skeletons apenas quando forem úteis;
+- usar lazy loading apenas quando trouxer benefício real;
 - respeitar prefers-reduced-motion;
 - manter uma linguagem visual profissional B2B.
 
-## DependÃªncias
+## Dependências
 
-Novas dependÃªncias devem ter benefÃ­cio claro.
+Novas dependências devem ter benefício claro.
 
-Antes de adicionar uma dependÃªncia, avaliar:
+Antes de adicionar uma dependência, avaliar:
 - se resolve um problema real;
 - se duplica uma ferramenta existente;
-- impacto em manutenÃ§Ã£o;
+- impacto em manutenção;
 - impacto no bundle;
 - impacto no desempenho;
-- impacto na seguranÃ§a;
+- impacto na segurança;
 - custo financeiro.
 
 ## Back-office
 
 Funcionalidades administrativas devem:
-- utilizar autorizaÃ§Ã£o real no backend;
-- utilizar roles explÃ­citas;
-- nÃ£o depender apenas de esconder rotas ou links;
-- respeitar RLS e polÃ­ticas de seguranÃ§a do Supabase;
-- manter aÃ§Ãµes administrativas auditÃ¡veis sempre que fizer sentido.
+- utilizar autorização real no backend;
+- utilizar roles explícitas;
+- não depender apenas de esconder rotas ou links;
+- respeitar RLS e políticas de segurança do Supabase;
+- manter ações administrativas auditáveis sempre que fizer sentido.
 
 ## Observabilidade
 
-DireÃ§Ã£o atual:
-- Sentry como primeira soluÃ§Ã£o de observabilidade;
-- nÃ£o instalar simultaneamente vÃ¡rias plataformas redundantes sem necessidade;
+Direção atual:
+- Sentry como primeira solução de observabilidade;
+- não instalar simultaneamente várias plataformas redundantes sem necessidade;
 - OpenTelemetry apenas se surgir uma necessidade concreta de tracing independente.
 
 ## Testes
 
-DireÃ§Ã£o atual:
-- Vitest para testes unitÃ¡rios;
-- React Testing Library para componentes e integraÃ§Ã£o;
+Direção atual:
+- Vitest para testes unitários;
+- React Testing Library para componentes e integração;
 - Playwright para testes end-to-end;
-- Codecov apenas depois de existir cobertura real suficiente para a mÃ©trica ser Ãºtil.
+- Codecov apenas depois de existir cobertura real suficiente para a métrica ser útil.
 
-## Qualidade de cÃ³digo
+## Qualidade de código
 
-DireÃ§Ã£o atual:
+Direção atual:
 - avaliar Biome para lint e formatting;
-- avaliar Knip para dependÃªncias, ficheiros e exports nÃ£o utilizados;
+- avaliar Knip para dependências, ficheiros e exports não utilizados;
 - evitar tooling redundante;
 - mutation testing apenas numa fase mais madura do produto.
 
 ## Regra final
 
-Estabilidade, seguranÃ§a e integridade do Radar B2B tÃªm prioridade sobre velocidade de implementaÃ§Ã£o ou adoÃ§Ã£o de novas ferramentas.
+Estabilidade, segurança e integridade do Adjudata têm prioridade sobre velocidade de implementação ou adoção de novas ferramentas.

@@ -1,4 +1,4 @@
-# Radar B2B - checklist de publicação
+# Adjudata - checklist de publicação
 
 Este checklist acompanha a implementação técnica. Não substitui revisão jurídica, contrato de subcontratação, registo de atividades ou validação de segurança.
 

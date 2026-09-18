@@ -3,10 +3,10 @@ import Link from "next/link";
 import PublicPage from "@/components/PublicPage";
 import { legalOperator } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Política de cookies", description: "Preferências e categorias de armazenamento utilizadas pelo Radar B2B." };
+export const metadata: Metadata = { title: "Política de cookies", description: "Preferências e categorias de armazenamento utilizadas pelo Adjudata." };
 
 export default function CookiesPage() {
-  return <PublicPage><article className="prose prose-invert max-w-3xl prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-white prose-p:text-slate-400 prose-li:text-slate-400"><p className="not-prose text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Preferências</p><h1>Política de cookies</h1><p className="lead">Última atualização: {legalOperator.lastUpdated}</p><p>Esta política explica como o Radar B2B utiliza cookies e outras tecnologias de armazenamento, em conformidade com a Lei n.º 41/2004, na redação em vigor. As categorias opcionais só são ativadas após o teu consentimento.</p>
+  return <PublicPage><article className="prose prose-invert max-w-3xl prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-white prose-p:text-slate-400 prose-li:text-slate-400"><p className="not-prose text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Preferências</p><h1>Política de cookies</h1><p className="lead">Última atualização: {legalOperator.lastUpdated}</p><p>Esta política explica como o Adjudata utiliza cookies e outras tecnologias de armazenamento, em conformidade com a Lei n.º 41/2004, na redação em vigor. As categorias opcionais só são ativadas após o teu consentimento.</p>
 
 <h2>1. O que são</h2>
 <p>Cookies e tecnologias similares (como o armazenamento local) permitem guardar informação no teu dispositivo. Utilizamos apenas o necessário para autenticação e funcionamento, e categorias opcionais que controlas no banner de consentimento.</p>

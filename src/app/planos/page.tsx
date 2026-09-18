@@ -16,7 +16,7 @@ const plans = [
     priceMonthly: 0,
     priceAnnual: 0,
     annualDiscount: 0,
-    description: "Para conhecer o Radar B2B e testar uma rotina de pesquisa.",
+    description: "Para conhecer o Adjudata e testar uma rotina de pesquisa.",
     features: ["50 pesquisas por mês", "10 oportunidades guardadas", "5 pesquisas guardadas", "1 alerta"],
     featured: false,
   },
@@ -72,10 +72,10 @@ export default function PlansPage() {
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link href="/" className="text-sm text-slate-500 transition hover:text-cyan-300">← Voltar ao Radar B2B</Link>
+        <Link href="/" className="text-sm text-slate-500 transition hover:text-cyan-300">← Voltar ao Adjudata</Link>
 
         <div className="mt-12 max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Planos Radar B2B</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Planos Adjudata</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl">Escolhe a capacidade certa para a tua prospeção.</h1>
           <p className="mt-5 text-base leading-7 text-slate-400">Compara as funcionalidades antes de avançar. O checkout seguro só abre depois de escolheres um plano pago.</p>
         </div>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import AppNavigation from "@/components/AppNavigation";
 import CookieConsent from "@/components/CookieConsent";
 import PublicFooter from "@/components/PublicFooter";
+import { brand } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,16 +18,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://radarb2b-iota.vercel.app",
+    process.env.NEXT_PUBLIC_SITE_URL || brand.siteUrl,
   ),
   title: {
-    default: "Radar B2B | Inteligência de contratação pública",
-    template: "%s | Radar B2B",
+    default: `${brand.name} | ${brand.slogan}`,
+    template: `%s | ${brand.name}`,
   },
   description:
     "Pesquisa procedimentos, acompanha oportunidades e identifica padrões de contratação pública em Portugal.",
-  applicationName: "Radar B2B",
-  authors: [{ name: "Radar B2B" }],
+  applicationName: brand.name,
+  authors: [{ name: brand.name }],
   keywords: [
     "contratação pública",
     "procurement intelligence",
@@ -37,10 +38,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "pt_PT",
-    siteName: "Radar B2B",
-    title: "Radar B2B | Inteligência de contratação pública",
-    description:
-      "Inteligência comercial para pesquisar e acompanhar contratação pública portuguesa.",
+    siteName: brand.name,
+    title: `${brand.name} | ${brand.slogan}`,
+    description: brand.description,
   },
   alternates: {
     canonical: "/",

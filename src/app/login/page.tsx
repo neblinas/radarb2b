@@ -207,7 +207,7 @@ export default function LoginPage() {
 
                 <div>
                   <p className="text-sm font-bold tracking-[0.22em] text-white">
-                    RADAR B2B
+                    ADJUDATA
                   </p>
                   <p className="mt-0.5 text-[11px] text-slate-500">
                     Procurement Intelligence
@@ -227,7 +227,7 @@ export default function LoginPage() {
               </h1>
 
               <p className="mt-5 max-w-xl text-base leading-7 text-slate-400">
-                O Radar B2B ajuda empresas a identificar procedimentos,
+                O Adjudata ajuda empresas a identificar procedimentos,
                 acompanhar concorrência e perceber melhor o mercado público
                 português.
               </p>
@@ -281,7 +281,7 @@ export default function LoginPage() {
 
                 <div>
                   <p className="text-xs font-bold tracking-[0.2em] text-white">
-                    RADAR B2B
+                    ADJUDATA
                   </p>
                   <p className="mt-0.5 text-[10px] text-slate-500">
                     Procurement Intelligence
@@ -295,7 +295,7 @@ export default function LoginPage() {
               className="mb-7 inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-cyan-300"
             >
               <ArrowLeft size={15} />
-              Voltar ao Radar B2B
+              Voltar ao Adjudata
             </Link>
 
             <div className="rounded-[28px] border border-slate-800 bg-[#081525] p-6 shadow-2xl shadow-black/20 sm:p-8">
@@ -312,7 +312,7 @@ export default function LoginPage() {
                   {isRecovery
                     ? "Escolhe uma nova palavra-passe para recuperar o acesso à tua conta."
                     : isSignup
-                    ? "Cria a tua conta para começares a acompanhar oportunidades no Radar B2B."
+                    ? "Cria a tua conta para começares a acompanhar oportunidades no Adjudata."
                     : "Entra na tua conta para acederes às tuas pesquisas, oportunidades e alertas."}
                 </p>
               </div>
@@ -410,7 +410,7 @@ export default function LoginPage() {
                       >
                         política de privacidade
                       </Link>{" "}
-                      do Radar B2B.
+                      do Adjudata.
                     </span>
                   </label>
                 ) : null}
@@ -467,7 +467,7 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-6 text-center text-xs leading-5 text-slate-600">
-              Ao utilizares o Radar B2B estás a aceder a uma plataforma de
+              Ao utilizares o Adjudata estás a aceder a uma plataforma de
               apoio à análise de contratação pública.
             </p>
           </div>

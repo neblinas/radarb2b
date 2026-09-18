@@ -6,7 +6,7 @@ test("a aplicação responde e carrega o login", async ({ page }) => {
   expect(response).not.toBeNull();
   expect(response?.status()).toBeLessThan(500);
 
-  await expect(page).toHaveTitle(/Radar B2B/i);
+  await expect(page).toHaveTitle(/Adjudata/i);
 });
 
 test("as rotas principais não devolvem erro HTTP 5xx", async ({ page }) => {

@@ -13,7 +13,7 @@ describe("CookieConsent", () => {
     render(<CookieConsent />);
 
     expect(
-      await screen.findByText(/Privacidade no Radar B2B/i),
+      await screen.findByText(/Privacidade no Adjudata/i),
     ).toBeInTheDocument();
   });
 
@@ -30,7 +30,7 @@ describe("CookieConsent", () => {
     });
 
     expect(
-      screen.queryByText(/Privacidade no Radar B2B/i),
+      screen.queryByText(/Privacidade no Adjudata/i),
     ).not.toBeInTheDocument();
   });
 
@@ -47,7 +47,7 @@ describe("CookieConsent", () => {
     });
 
     expect(
-      screen.queryByText(/Privacidade no Radar B2B/i),
+      screen.queryByText(/Privacidade no Adjudata/i),
     ).not.toBeInTheDocument();
 
     act(() => {
@@ -55,7 +55,7 @@ describe("CookieConsent", () => {
     });
 
     expect(
-      await screen.findByText(/Privacidade no Radar B2B/i),
+      await screen.findByText(/Privacidade no Adjudata/i),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("checkbox", { name: /Cookies necessários ativos/i }),

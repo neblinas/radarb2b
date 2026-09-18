@@ -44,7 +44,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 color: "#94a3b8",
               }}
             >
-              Radar B2B
+              Adjudata
             </p>
 
             <h1

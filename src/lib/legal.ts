@@ -1,3 +1,5 @@
+import { brand as brandIdentity } from "@/lib/brand";
+
 function env(...names: string[]) {
   for (const name of names) {
     const value = process.env[name]?.trim();
@@ -9,7 +11,7 @@ function env(...names: string[]) {
 }
 
 // Marca de produto usada em toda a interface.
-export const brand = "Radar B2B";
+export const brand = brandIdentity.name;
 
 // Identificação legal do operador. Como ENI, o titular é uma pessoa singular,
 // pelo que o nome comercial e a denominação legal coincidem com a pessoa.
@@ -31,11 +33,11 @@ export const legalOperator = {
   disputeEmail: env("NEXT_PUBLIC_DISPUTE_EMAIL"),
   dpo: env("NEXT_PUBLIC_DPO_CONTACT", "NEXT_PUBLIC_DPO_EMAIL"),
   registry: env("NEXT_PUBLIC_LEGAL_REGISTRY"),
-  siteUrl: env("NEXT_PUBLIC_SITE_URL") || "https://radarb2b-iota.vercel.app",
+  siteUrl: env("NEXT_PUBLIC_SITE_URL") || "https://adjudata.pt",
   lastUpdated: "17 de setembro de 2026",
 } as const;
 
-// Entidades externas que tratam dados por conta do Radar B2B, com base legal e finalidade.
+// Entidades externas que tratam dados por conta do Adjudata, com base legal e finalidade.
 // Mantidas em código para serem mostradas na política de privacidade (requisito RGPD art. 13.º).
 export const dataProcessors = [
   {

@@ -42,7 +42,7 @@ export default function LeadFinder() {
 
   async function createCompanyLead(company: Company) {
     setSaving(company.id); setNotice("");
-    const result = await supabase.rpc("create_commercial_opportunity", { p_company_name: company.name || "Empresa sem nome", p_contact_name: "A identificar", p_contact_email: null, p_note: `Lead descoberta no Radar B2B. Tamanho inferido: ${company.inferred_size}. Adjudicações: ${company.award_count}. Valor agregado: ${Number(company.total_award_value).toLocaleString("pt-PT", { style: "currency", currency: "EUR" })}.` });
+    const result = await supabase.rpc("create_commercial_opportunity", { p_company_name: company.name || "Empresa sem nome", p_contact_name: "A identificar", p_contact_email: null, p_note: `Lead descoberta no Adjudata. Tamanho inferido: ${company.inferred_size}. Adjudicações: ${company.award_count}. Valor agregado: ${Number(company.total_award_value).toLocaleString("pt-PT", { style: "currency", currency: "EUR" })}.` });
     if (result.error) setError("Não foi possível criar o novo contacto.");
     else { setNotice(`${company.name || "Empresa"} foi adicionada ao pipeline.`); setContacted((current) => [...current, { company_name: company.name || "", company_nif: company.nif, stage: "Novo" }]); }
     setSaving(null);

@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
 const maxPages = 5;
 const maxBytes = 1_000_000;
-const userAgent = "RadarB2B-ContactDiscovery/1.0 (+https://radarb2b.pt)";
+const userAgent = "Adjudata-ContactDiscovery/1.0 (+https://adjudata.pt)";
 
 function isPrivateAddress(address: string) {
   const value = address.toLowerCase();

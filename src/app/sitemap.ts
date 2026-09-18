@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { brand } from "@/lib/brand";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://radarb2b-iota.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || brand.siteUrl;
   const routes = ["/", "/login", "/planos", "/recrutamento", "/sobre", "/faq", "/contacto", "/termos", "/privacidade", "/cookies", "/informacao-legal"];
 
   return routes.map((route) => ({

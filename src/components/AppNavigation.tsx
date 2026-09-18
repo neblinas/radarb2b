@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { brand } from "@/lib/brand";
 
 const navItems = [
   {
@@ -78,9 +79,9 @@ export default function AppNavigation() {
                 <ShieldCheck size={19} />
               </div>
 
-              <div className="leading-tight">
+                            <div className="leading-tight">
                 <div className="text-sm font-bold tracking-[0.14em] text-white">
-                  RADAR B2B
+                  {brand.wordmark}
                 </div>
                 <div className="hidden text-[10px] uppercase tracking-[0.15em] text-slate-500 sm:block">
                   Procurement Intelligence

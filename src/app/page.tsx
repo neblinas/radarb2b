@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { brand } from "@/lib/brand";
 
 import {
   BellRing,
@@ -74,7 +75,7 @@ const modules = [
     href: "/alertas",
   },
   {
-    title: "Planos Radar B2B",
+    title: "Planos Adjudata",
     description:
       "Compara a capacidade de pesquisa e acompanhamento de cada plano.",
     icon: ShieldCheck,
@@ -83,7 +84,7 @@ const modules = [
   {
     title: "Programa comercial",
     description:
-      "Apresenta o Radar B2B, cresce com a tua equipa e acompanha os teus ganhos.",
+      "Apresenta o Adjudata, cresce com a tua equipa e acompanha os teus ganhos.",
     icon: Users,
     href: "/recrutamento",
   },
@@ -211,12 +212,12 @@ export default function Home() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.16),transparent_33%)]" />
           <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              Radar B2B
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              {brand.name}
             </p>
 
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Inteligência de contratação pública
+              {brand.slogan}
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
@@ -393,7 +394,7 @@ export default function Home() {
               Área de trabalho
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Acede diretamente às funcionalidades principais do Radar B2B.
+              Acede diretamente às funcionalidades principais do Adjudata.
             </p>
           </div>
 
@@ -459,8 +460,8 @@ export default function Home() {
               />
 
               <div>
-                <h2 className="font-semibold text-white">
-                  Radar B2B
+                                <h2 className="font-semibold text-white">
+                  {brand.name}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   Informação estruturada para apoiar decisões comerciais no
@@ -472,7 +473,7 @@ export default function Home() {
         </section>
 
         <footer className="mt-10 border-t border-slate-800 py-6 text-xs text-slate-600">
-          Radar B2B · Plataforma de inteligência sobre contratação pública
+          {brand.name} · {brand.slogan}
         </footer>
       </section>
     </main>
