@@ -43,6 +43,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -104,6 +105,12 @@ export default function LoginPage() {
     }
 
     if (isSignup) {
+      if (!acceptedTerms) {
+        setError("Para criar conta tens de aceitar os termos de utilização.");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -374,6 +381,29 @@ export default function LoginPage() {
                   >
                     {message}
                   </div>
+                ) : null}
+
+                {isSignup ? (
+                  <label className="flex items-start gap-3 rounded-xl border border-slate-800 bg-[#06101f] px-4 py-3 text-sm leading-5 text-slate-400">
+                    <input
+                      type="checkbox"
+                      checked={acceptedTerms}
+                      onChange={(event) => setAcceptedTerms(event.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-700 bg-slate-900 accent-cyan-400"
+                    />
+                    <span>
+                      Li e aceito os{" "}
+                      <Link
+                        href="/termos"
+                        className="font-medium text-cyan-400 transition hover:text-cyan-300"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        termos de utilização
+                      </Link>{" "}
+                      do Radar B2B.
+                    </span>
+                  </label>
                 ) : null}
 
                 {!isSignup && !isRecovery ? (
