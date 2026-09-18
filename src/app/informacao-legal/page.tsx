@@ -47,12 +47,12 @@ export default function LegalInfoPage() {
             className="not-prose rounded-xl border border-amber-400/30 bg-amber-400/5 p-4 text-sm leading-6 text-amber-100"
           >
             <p className="font-semibold text-amber-200">
-              Informação societária em fase de finalização
+              Contactos em fase de finalização
             </p>
             <p className="mt-2 text-amber-100/80">
-              O Radar B2B encontra-se em fase de designação legal provisória.
-              Antes da disponibilização comercial alargada, os campos abaixo
-              serão integralmente preenchidos:
+              Os contactos profissionais abaixo estão a ser configurados. Até
+              estarem disponíveis, qualquer pedido pode ser dirigido através dos
+              canais de suporte indicados no produto:
             </p>
             <ul className="mt-2 list-disc pl-5 text-amber-100/80">
               {pendingLegalFields.map((field) => (
@@ -64,10 +64,11 @@ export default function LegalInfoPage() {
 
         <h2>Prestador de serviços</h2>
         <ul>
-          <Field label="Denominação" value={legalOperator.name} />
+          <Field label="Nome comercial" value={legalOperator.brand} />
+          <Field label="Titular" value={legalOperator.legalName} />
           <Field label="Forma jurídica" value={legalOperator.legalForm} />
           <Field label="NIF" value={legalOperator.nif} />
-          <Field label="Sede" value={legalOperator.address} />
+          <Field label="Estabelecimento (sede)" value={legalOperator.address} />
           <Field label="País de estabelecimento" value={legalOperator.country} />
           <Field label="Registo comercial" value={legalOperator.registry} />
         </ul>

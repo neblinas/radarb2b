@@ -4,8 +4,9 @@ Este checklist acompanha a implementação técnica. Não substitui revisão jur
 
 ## Identidade e domínios
 
-- [ ] Confirmar entidade legal, NIF, morada e email de suporte.
-- [ ] Preencher `NEXT_PUBLIC_LEGAL_ENTITY_NAME`, `NEXT_PUBLIC_LEGAL_ENTITY_NIF`, `NEXT_PUBLIC_LEGAL_ENTITY_ADDRESS`, `NEXT_PUBLIC_PRIVACY_EMAIL` e `NEXT_PUBLIC_SUPPORT_EMAIL` nos ambientes Vercel. Opcional: `NEXT_PUBLIC_DISPUTE_EMAIL`, `NEXT_PUBLIC_DPO_CONTACT`, `NEXT_PUBLIC_LEGAL_REGISTRY`.
+- [x] Confirmar entidade legal, NIF e morada (ENI: Tiago Manuel Ferreira Dias, NIF 222184680).
+- [ ] Definir emails profissionais e preencher `NEXT_PUBLIC_PRIVACY_EMAIL` e `NEXT_PUBLIC_SUPPORT_EMAIL` nos ambientes Vercel. Opcional: `NEXT_PUBLIC_DISPUTE_EMAIL`, `NEXT_PUBLIC_DPO_CONTACT`, `NEXT_PUBLIC_LEGAL_REGISTRY`.
+- [x] Preencher `NEXT_PUBLIC_LEGAL_ENTITY_NAME`, `NEXT_PUBLIC_LEGAL_ENTITY_NIF` e `NEXT_PUBLIC_LEGAL_ENTITY_ADDRESS` (em `.env.local` e a replicar nos ambientes Vercel). Opcional: `NEXT_PUBLIC_LEGAL_FORM` (por omissão: "Empresário em nome individual").
 - [ ] Confirmar domínio principal e redirecionamentos HTTPS no Vercel.
 - [ ] Confirmar DNS SPF, DKIM e DMARC para emails transacionais.
 - [ ] Preencher `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` e `NEXT_PUBLIC_BING_SITE_VERIFICATION`, se usados.
