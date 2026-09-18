@@ -391,7 +391,7 @@ export default function LoginPage() {
                       onChange={(event) => setAcceptedTerms(event.target.checked)}
                       className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-700 bg-slate-900 accent-cyan-400"
                     />
-                    <span>
+                                        <span>
                       Li e aceito os{" "}
                       <Link
                         href="/termos"
@@ -400,6 +400,15 @@ export default function LoginPage() {
                         rel="noreferrer"
                       >
                         termos de utilização
+                      </Link>{" "}
+                      e a{" "}
+                      <Link
+                        href="/privacidade"
+                        className="font-medium text-cyan-400 transition hover:text-cyan-300"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        política de privacidade
                       </Link>{" "}
                       do Radar B2B.
                     </span>

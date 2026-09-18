@@ -5,19 +5,21 @@ Este checklist acompanha a implementação técnica. Não substitui revisão jur
 ## Identidade e domínios
 
 - [ ] Confirmar entidade legal, NIF, morada e email de suporte.
-- [ ] Preencher `NEXT_PUBLIC_LEGAL_ENTITY_*`, `NEXT_PUBLIC_PRIVACY_EMAIL` e `NEXT_PUBLIC_SUPPORT_EMAIL` nos ambientes Vercel.
+- [ ] Preencher `NEXT_PUBLIC_LEGAL_ENTITY_NAME`, `NEXT_PUBLIC_LEGAL_ENTITY_NIF`, `NEXT_PUBLIC_LEGAL_ENTITY_ADDRESS`, `NEXT_PUBLIC_PRIVACY_EMAIL` e `NEXT_PUBLIC_SUPPORT_EMAIL` nos ambientes Vercel. Opcional: `NEXT_PUBLIC_DISPUTE_EMAIL`, `NEXT_PUBLIC_DPO_CONTACT`, `NEXT_PUBLIC_LEGAL_REGISTRY`.
 - [ ] Confirmar domínio principal e redirecionamentos HTTPS no Vercel.
 - [ ] Confirmar DNS SPF, DKIM e DMARC para emails transacionais.
 - [ ] Preencher `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` e `NEXT_PUBLIC_BING_SITE_VERIFICATION`, se usados.
 - [ ] Confirmar que o nome comercial e o domínio não infringem marca ou direitos de terceiros.
+- [x] Publicar página de identificação do operador (`/informacao-legal`) nos termos do art. 10.º do DL 7/2004.
 
 ## RGPD e cookies
 
 - [ ] Identificar o responsável pelo tratamento e, se aplicável, o encarregado de proteção de dados.
-- [ ] Confirmar finalidades, bases legais, prazos de conservação e destinatários.
-- [ ] Formalizar contratos com Supabase, Vercel, Sentry, Stripe e outros subcontratantes.
+- [x] Documentar finalidades, bases legais, prazos de conservação e destinatários na Política de privacidade.
+- [x] Listar subcontratantes (Supabase, Vercel, Sentry, Stripe) e informação sobre transferências internacionais.
+- [ ] Formalizar contratos de subcontratação (DPA) com Supabase, Vercel, Sentry, Stripe e outros subcontratantes.
 - [ ] Avaliar transferências internacionais e garantias aplicáveis.
-- [ ] Confirmar que ferramentas de análise/marketing só carregam após consentimento.
+- [x] Garantir que categorias de análise/marketing só carregam após consentimento, com consentimento reintroduzível a partir do rodapé ("Gerir cookies").
 - [ ] Definir processo para acesso, retificação, apagamento, oposição, limitação e portabilidade.
 - [ ] Definir processo de resposta a incidentes e violações de dados.
 - [ ] Rever os Termos de utilização, Privacidade e Cookies com assessoria jurídica.
@@ -40,3 +42,4 @@ Este checklist acompanha a implementação técnica. Não substitui revisão jur
 - [ ] Verificar `robots.txt`, `sitemap.xml`, canonical e metatags.
 - [ ] Testar mobile, teclado, leitor de ecrã, contraste e `prefers-reduced-motion`.
 - [ ] Guardar URL, commit, resultados CI e evidência de aprovação.
+

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CookieSettingsButton from "@/components/CookieSettingsButton";
 
 const legalLinks = [
   ["Sobre nós", "/sobre"],
@@ -6,6 +7,7 @@ const legalLinks = [
   ["Termos de utilização", "/termos"],
   ["Privacidade", "/privacidade"],
   ["Cookies", "/cookies"],
+  ["Informação legal", "/informacao-legal"],
   ["Contacto", "/contacto"],
   ["Acesso comercial", "/acesso-comercial"],
 ] as const;
@@ -21,8 +23,10 @@ export default function PublicFooter() {
         </div>
         <nav aria-label="Informação legal" className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-400">
           {legalLinks.map(([label, href]) => <Link key={href} href={href} className="transition hover:text-cyan-300">{label}</Link>)}
+          <CookieSettingsButton />
         </nav>
       </div>
     </footer>
   );
 }
+

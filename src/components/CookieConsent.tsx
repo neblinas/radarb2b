@@ -47,9 +47,19 @@ export default function CookieConsent() {
       } catch {
         setVisible(true);
       }
-    }, 0);
+        }, 0);
 
-    return () => window.clearTimeout(timer);
+    function openSettings() {
+      setSettingsOpen(true);
+      setVisible(true);
+    }
+
+    window.addEventListener("radar-open-cookie-settings", openSettings);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("radar-open-cookie-settings", openSettings);
+    };
   }, []);
 
   if (!visible) {

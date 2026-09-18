@@ -93,6 +93,9 @@ describe("LoginPage - aceitação de termos no registo", () => {
     expect(
       screen.getByRole("link", { name: /termos de utilização/i }),
     ).toHaveAttribute("href", "/termos");
+    expect(
+      screen.getByRole("link", { name: /política de privacidade/i }),
+    ).toHaveAttribute("href", "/privacidade");
   });
 
   it("bloqueia o registo quando os termos não são aceites", async () => {
