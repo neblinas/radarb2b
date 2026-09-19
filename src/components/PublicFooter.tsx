@@ -6,6 +6,7 @@ const legalLinks = [
   ["Sobre nós", "/sobre"],
   ["Perguntas frequentes", "/faq"],
   ["Termos de utilização", "/termos"],
+  ["Programa comercial", "/programa-comercial"],
   ["Privacidade", "/privacidade"],
   ["Cookies", "/cookies"],
   ["Informação legal", "/informacao-legal"],
