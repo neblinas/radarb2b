@@ -1,0 +1,7 @@
+project_id = "swelyfjlnvpxgahchpxc"
+
+[functions.invite-commercial-member]
+verify_jwt = false
+
+[functions.discover-company-contacts]
+verify_jwt = true

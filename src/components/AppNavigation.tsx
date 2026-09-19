@@ -3,43 +3,50 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
-  Bookmark,
-  LayoutDashboard,
+  BellRing,
+  BookmarkCheck,
+  ChartNoAxesCombined,
+  CircleDollarSign,
   Menu,
-  Search,
+  SearchCheck,
   Settings,
   ShieldCheck,
-  Trophy,
+  Handshake,
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { brand } from "@/lib/brand";
 
 const navItems = [
   {
     label: "Dashboard",
     href: "/",
-    icon: LayoutDashboard,
+    icon: ChartNoAxesCombined,
   },
   {
     label: "Pesquisa",
     href: "/pesquisa",
-    icon: Search,
+    icon: SearchCheck,
   },
   {
     label: "Pesquisas guardadas",
     href: "/pesquisas-guardadas",
-    icon: Bookmark,
+    icon: BookmarkCheck,
   },
   {
     label: "Oportunidades",
     href: "/oportunidades",
-    icon: Trophy,
+    icon: Handshake,
   },
   {
     label: "Alertas",
     href: "/alertas",
-    icon: Bell,
+    icon: BellRing,
+  },
+  {
+    label: "Planos e preços",
+    href: "/planos",
+    icon: CircleDollarSign,
   },
 ];
 
@@ -72,9 +79,9 @@ export default function AppNavigation() {
                 <ShieldCheck size={19} />
               </div>
 
-              <div className="leading-tight">
+                            <div className="leading-tight">
                 <div className="text-sm font-bold tracking-[0.14em] text-white">
-                  RADAR B2B
+                  {brand.wordmark}
                 </div>
                 <div className="hidden text-[10px] uppercase tracking-[0.15em] text-slate-500 sm:block">
                   Procurement Intelligence

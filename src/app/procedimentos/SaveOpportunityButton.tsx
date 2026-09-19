@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { Bookmark, Loader2 } from "lucide-react";
+import { BookmarkCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type SaveOpportunityButtonProps = {
@@ -59,7 +59,7 @@ export default function SaveOpportunityButton({
         {saving ? (
           <Loader2 size={16} className="animate-spin" />
         ) : (
-          <Bookmark size={16} />
+          <BookmarkCheck size={16} />
         )}
 
         {saved ? "Oportunidade guardada" : "Guardar oportunidade"}

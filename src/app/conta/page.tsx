@@ -8,7 +8,7 @@ import {
   CreditCard,
   Loader2,
   LogOut,
-  Search,
+  SearchCheck,
   UserCircle,
   XCircle,
 } from "lucide-react";
@@ -180,56 +180,6 @@ export default function ContaPage() {
     router.push("/login");
   }
 
-  async function handleCheckout(
-    planId: "starter" | "pro",
-  ) {
-    setActionError("");
-    setProcessingAction(planId);
-
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-
-      const {
-        data,
-        error: functionError,
-      } = await supabase.functions.invoke(
-        "create-checkout-session",
-        {
-          body: {
-            plan_id: planId,
-          },
-        },
-      );
-
-      if (functionError) {
-        throw functionError;
-      }
-
-      if (!data?.url) {
-        throw new Error(
-          "A sessão de pagamento não devolveu um endereço válido.",
-        );
-      }
-
-      window.location.href = data.url;
-    } catch (err) {
-      console.error(err);
-
-      setActionError(
-        "Não foi possível iniciar o pagamento. Tenta novamente.",
-      );
-
-      setProcessingAction(null);
-    }
-  }
-
   async function handleCustomerPortal() {
     setActionError("");
     setProcessingAction("portal");
@@ -348,7 +298,9 @@ export default function ContaPage() {
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] border border-cyan-950/80 bg-[#09182a] p-6 sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.14),transparent_34%)]" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
               Conta
@@ -372,6 +324,7 @@ export default function ContaPage() {
             <LogOut size={16} />
             Sair
           </button>
+          </div>
         </div>
 
         {checkoutMessage === "success" ? (
@@ -448,6 +401,13 @@ export default function ContaPage() {
                 {account?.accountStatus}
               </span>
             </div>
+
+            <Link
+              href="/perfil"
+              className="mt-4 inline-flex text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+            >
+              Editar os meus dados →
+            </Link>
           </div>
 
           <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-400/10 to-slate-900/55 p-5 shadow-sm">
@@ -505,7 +465,7 @@ export default function ContaPage() {
               </div>
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-cyan-300">
-                <Search size={19} />
+                <SearchCheck size={19} />
               </div>
             </div>
 
@@ -582,29 +542,12 @@ export default function ContaPage() {
                   <li>5 alertas automáticos</li>
                 </ul>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleCheckout("starter")
-                  }
-                  disabled={
-                    processingAction !== null
-                  }
+                <Link
+                  href="/planos"
                   className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {processingAction ===
-                  "starter" ? (
-                    <>
-                      <Loader2
-                        size={17}
-                        className="animate-spin"
-                      />
-                      A preparar...
-                    </>
-                  ) : (
-                    "Escolher Starter"
-                  )}
-                </button>
+                  Comparar planos
+                </Link>
               </div>
 
               <div className="relative rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-400/10 to-slate-900/55 p-6 shadow-sm">
@@ -638,28 +581,12 @@ export default function ContaPage() {
                   <li>20 alertas automáticos</li>
                 </ul>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleCheckout("pro")
-                  }
-                  disabled={
-                    processingAction !== null
-                  }
+                <Link
+                  href="/planos"
                   className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {processingAction === "pro" ? (
-                    <>
-                      <Loader2
-                        size={17}
-                        className="animate-spin"
-                      />
-                      A preparar...
-                    </>
-                  ) : (
-                    "Escolher Pro"
-                  )}
-                </button>
+                  Comparar planos
+                </Link>
               </div>
             </div>
 
@@ -721,7 +648,7 @@ export default function ContaPage() {
             href="/pesquisa"
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-cyan-400"
           >
-            <Search size={16} />
+                    <SearchCheck size={16} />
             Ir para pesquisa
           </Link>
         </div>

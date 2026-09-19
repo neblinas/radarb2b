@@ -36,7 +36,7 @@ describe("AppNavigation", () => {
 
     render(<AppNavigation />);
 
-    expect(screen.getByText("RADAR B2B")).toBeInTheDocument();
+    expect(screen.getByText("ADJUDATA")).toBeInTheDocument();
 
     expect(
       screen.getByRole("link", { name: /Dashboard/i }),
@@ -66,8 +66,8 @@ describe("AppNavigation", () => {
 
     render(<AppNavigation />);
 
-    expect(
-      screen.queryByText("RADAR B2B"),
+        expect(
+      screen.queryByText("ADJUDATA"),
     ).not.toBeInTheDocument();
   });
 

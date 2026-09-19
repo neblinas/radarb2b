@@ -1,0 +1,29 @@
+# Edge Functions do CRM
+
+## `invite-commercial-member`
+
+Deploy from the `web` directory with the Supabase CLI ligado ao projeto:
+
+```text
+supabase functions deploy invite-commercial-member --project-ref swelyfjlnvpxgahchpxc
+```
+
+The function has `verify_jwt = false` in `supabase/config.toml` so CORS preflight requests can reach the handler. The handler validates the bearer token and CRM role itself before doing any privileged work.
+
+The function uses the project-provided `SUPABASE_URL` and `SUPABASE_ANON_KEY`, plus the custom secret `RADAR_SERVICE_ROLE_KEY`. Supabase reserves names beginning with `SUPABASE_`; the service role key must remain an Edge Function secret and never be exposed to Next.js/browser code.
+
+Set `SITE_URL` as an Edge Function secret when the production URL is confirmed:
+
+```text
+supabase secrets set SITE_URL=https://adjudata.pt --project-ref swelyfjlnvpxgahchpxc
+```
+
+Set the service role secret with the allowed custom name:
+
+```text
+supabase secrets set RADAR_SERVICE_ROLE_KEY=<service-role-key> --project-ref swelyfjlnvpxgahchpxc
+```
+
+The function also requires `RESEND_API_KEY`. Optionally set `RESEND_FROM_EMAIL` to a verified Resend sender. Without a domain, the default test sender is `Adjudata <onboarding@resend.dev>` and Resend may restrict recipients to the account owner.
+
+The Supabase Auth invite email template must use `{{ .ConfirmationURL }}` and the redirect URL must be allow-listed in Authentication URL Configuration.

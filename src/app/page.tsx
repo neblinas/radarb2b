@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { brand } from "@/lib/brand";
 
 import {
-  BarChart3,
-  Bell,
-  Bookmark,
+  BellRing,
+  BookmarkCheck,
   Building2,
-  FileText,
-  Search,
+  ChartNoAxesCombined,
+  FileSignature,
+  Gavel,
+  Landmark,
+  SearchCheck,
   ShieldCheck,
-  Trophy,
   Users,
 } from "lucide-react";
 
@@ -20,13 +22,13 @@ const initialKpis = [
   {
     label: "Procedimentos",
     value: "—",
-    icon: FileText,
+    icon: Gavel,
     detail: "concursos e procedimentos",
   },
   {
     label: "Contratos",
     value: "—",
-    icon: FileText,
+    icon: FileSignature,
     detail: "contratos analisados",
   },
   {
@@ -38,7 +40,7 @@ const initialKpis = [
   {
     label: "Entidades",
     value: "—",
-    icon: Users,
+    icon: Landmark,
     detail: "compradores públicos",
   },
 ];
@@ -48,29 +50,43 @@ const modules = [
     title: "Pesquisar procedimentos",
     description:
       "Pesquisa concursos, consultas e outros procedimentos de contratação.",
-    icon: Search,
+    icon: SearchCheck,
     href: "/pesquisa",
   },
   {
     title: "Pesquisas guardadas",
     description:
       "Volta rapidamente às combinações de filtros que guardaste.",
-    icon: Bookmark,
+    icon: BookmarkCheck,
     href: "/pesquisas-guardadas",
   },
   {
     title: "Oportunidades guardadas",
     description:
       "Consulta e gere os procedimentos que marcaste para acompanhar.",
-    icon: Trophy,
+    icon: ChartNoAxesCombined,
     href: "/oportunidades",
   },
   {
     title: "Alertas",
     description:
       "Gere os alertas automáticos criados a partir das tuas pesquisas.",
-    icon: Bell,
+    icon: BellRing,
     href: "/alertas",
+  },
+  {
+    title: "Planos Adjudata",
+    description:
+      "Compara a capacidade de pesquisa e acompanhamento de cada plano.",
+    icon: ShieldCheck,
+    href: "/planos",
+  },
+  {
+    title: "Programa comercial",
+    description:
+      "Apresenta o Adjudata, cresce com a tua equipa e acompanha os teus ganhos.",
+    icon: Users,
+    href: "/recrutamento",
   },
 ];
 
@@ -192,14 +208,16 @@ export default function Home() {
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] border border-cyan-950/80 bg-[#09182a] p-6 sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.16),transparent_33%)]" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
-              Radar B2B
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              {brand.name}
             </p>
 
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Inteligência de contratação pública
+              {brand.slogan}
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
@@ -216,11 +234,12 @@ export default function Home() {
               Portugal · dados BASE atualizados semanalmente
             </div>
           </div>
+          </div>
         </div>
 
         <section className="mt-8">
           <div className="relative">
-            <Search
+            <SearchCheck
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
               size={20}
             />
@@ -246,14 +265,15 @@ export default function Home() {
                     searchResults.procedures.map((item) => (
                       <Link
                         key={item.id}
-                        href={`/procedimentos/${item.id}`}
+                        href={`/login?next=${encodeURIComponent(`/procedimentos/${item.id}`)}`}
                         className="mb-2 block rounded-xl border border-transparent bg-slate-800/60 p-3 transition hover:border-cyan-500/20 hover:bg-slate-800"
                       >
                         <p className="text-sm font-medium text-white">
-                          {item.object || "Sem objeto"}
+                          {(item.object || "Sem objeto").slice(0, 120)}
+                          {(item.object || "").length > 120 ? "…" : ""}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          {item.procedure_type || "Procedimento"}
+                          {item.procedure_type || "Procedimento"} · Saber mais
                         </p>
                       </Link>
                     ))
@@ -374,7 +394,7 @@ export default function Home() {
               Área de trabalho
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Acede diretamente às funcionalidades principais do Radar B2B.
+              Acede diretamente às funcionalidades principais do Adjudata.
             </p>
           </div>
 
@@ -414,7 +434,7 @@ export default function Home() {
         <section className="mt-10 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
             <div className="flex items-start gap-3">
-              <BarChart3
+              <ChartNoAxesCombined
                 size={20}
                 className="mt-0.5 shrink-0 text-cyan-400"
               />
@@ -440,8 +460,8 @@ export default function Home() {
               />
 
               <div>
-                <h2 className="font-semibold text-white">
-                  Radar B2B
+                                <h2 className="font-semibold text-white">
+                  {brand.name}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-400">
                   Informação estruturada para apoiar decisões comerciais no
@@ -453,7 +473,7 @@ export default function Home() {
         </section>
 
         <footer className="mt-10 border-t border-slate-800 py-6 text-xs text-slate-600">
-          Radar B2B · Plataforma de inteligência sobre contratação pública
+          {brand.name} · {brand.slogan}
         </footer>
       </section>
     </main>

@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Search,
-  FileText,
+  Gavel,
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Bell,
+  BellRing,
   BookmarkPlus,
   RotateCcw,
 } from "lucide-react";
@@ -369,7 +369,9 @@ useEffect(() => {
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative overflow-hidden rounded-[28px] border border-cyan-950/80 bg-[#09182a] p-6 sm:p-8 lg:flex lg:items-end lg:justify-between">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.14),transparent_34%)]" />
+          <div className="relative flex w-full flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
               Pesquisa
@@ -412,6 +414,7 @@ useEffect(() => {
                 Entrar
               </Link>
             )}
+          </div>
           </div>
         </div>
 
@@ -581,7 +584,7 @@ useEffect(() => {
                 {creatingAlert ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <Bell size={16} />
+                  <BellRing size={16} />
                 )}
 
                 Criar alerta
@@ -611,6 +614,14 @@ useEffect(() => {
           {hasActiveFilters && usageError ? (
             <div className="mt-4 rounded-xl border border-amber-900/50 bg-amber-950/20 px-4 py-3 text-sm text-amber-300">
               {usageError}
+              {!sessionEmail ? (
+                <Link
+                  href={`/login?next=${encodeURIComponent(`/pesquisa?${new URLSearchParams({ query, procedureType, dateFrom, dateTo, valueFrom, valueTo }).toString()}`)}`}
+                  className="mt-3 inline-flex items-center rounded-lg bg-cyan-400 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-300"
+                >
+                  Desbloquear pesquisa gratuita
+                </Link>
+              ) : null}
             </div>
           ) : null}
         </section>
@@ -626,7 +637,7 @@ useEffect(() => {
           {hasActiveFilters && !loading && searched && results.length === 0 && !usageError && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-10 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-500">
-                <FileText size={22} />
+                <Gavel size={22} />
               </div>
 
               <h2 className="mt-4 font-semibold text-slate-200">
@@ -672,7 +683,7 @@ useEffect(() => {
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-cyan-300 transition group-hover:bg-cyan-400/10">
-                        <FileText size={19} />
+                        <Gavel size={19} />
                       </div>
 
                       <div className="min-w-0 flex-1">
