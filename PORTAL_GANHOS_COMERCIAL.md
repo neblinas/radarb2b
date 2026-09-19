@@ -46,7 +46,7 @@ webhook).
 - `web/src/app/backoffice/comissoes/gestao/page.tsx` — **gestão** (atribuir, aprovar, pagar, cancelar).
 
 **Validação:** 10/10 testes do motor + cenário de 2 níveis + RPCs do portal;
-`npm test` (54), `lint`, `tsc`, `build` todos verdes.
+`npm test` (64), `lint`, `tsc`, `build` todos verdes.
 
 ## 1. Objetivo
 
@@ -258,5 +258,5 @@ recrutador 5% durante 6 meses.
 - **Termos:** `commercial_current_terms` v1; `commercial_my_terms_status`
   `accepted:false` → `true` após `commercial_accept_terms` (versão 1, hash md5
   guardado); leitura pública OK.
-- Suíte: `npm test` 58/58, `tsc`, `lint`, `npm run build` — todos verdes
+- Suíte: `npm test` 64/64, `tsc`, `lint`, `npm run build` — todos verdes
   (rota `/programa-comercial` gerada).
