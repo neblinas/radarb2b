@@ -163,6 +163,49 @@ async function getSubscriptionFromStripe(
   return subscription;
 }
 
+// Dispara o motor de comissões para o cliente da subscrição sincronizada.
+// É best-effort: uma falha aqui não deve fazer o webhook Stripe falhar (a
+// subscrição local já foi atualizada e o gestor pode reprocessar).
+async function syncCommissions(params: {
+  clientUserId: string;
+  isCancelled: boolean;
+}) {
+  const { clientUserId, isCancelled } = params;
+
+  try {
+    if (isCancelled) {
+      const { data: subs, error: subsError } = await supabase
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", clientUserId);
+
+      if (subsError) throw subsError;
+
+      for (const sub of subs ?? []) {
+        await supabase.rpc("commission_sync_subscription_service", {
+          p_subscription_id: sub.id,
+          p_paid_months: null,
+          p_is_annual: null,
+          p_is_cancelled: true,
+        });
+      }
+      return;
+    }
+
+    // Recalcula as comissões das subscrições ativas do cliente. O motor infere
+    // os meses pagos a partir do período de faturação atual.
+    await supabase.rpc("commission_resync_client", {
+      p_client_user_id: clientUserId,
+    });
+  } catch (commissionError) {
+    console.error(
+      "Falha ao sincronizar comissões:",
+      commissionError,
+    );
+  }
+}
+
+
 async function findPlanIdByPriceId(
   priceId: string | null,
 ): Promise<string | null> {
@@ -346,6 +389,8 @@ async function syncSubscription(
   if (updateError) {
     throw updateError;
   }
+
+  return { userId, localStatus };
 }
 
 async function registerStripeEvent(
@@ -535,13 +580,20 @@ Deno.serve(async (req) => {
               subscriptionId,
             );
 
-          await syncSubscription(
+          const syncResult = await syncSubscription(
             stripeSubscription,
             session.metadata
               ?.supabase_user_id ?? null,
             session.metadata?.plan_id ??
               null,
           );
+
+          await syncCommissions({
+            clientUserId: syncResult.userId,
+            isCancelled:
+              syncResult.localStatus ===
+              "cancelled",
+          });
         }
 
         break;
@@ -566,7 +618,7 @@ Deno.serve(async (req) => {
             subscriptionId,
           );
 
-        await syncSubscription(
+        const syncResult = await syncSubscription(
           stripeSubscription,
           eventSubscription?.metadata
             ?.supabase_user_id ?? null,
@@ -574,13 +626,25 @@ Deno.serve(async (req) => {
             null,
         );
 
+        await syncCommissions({
+          clientUserId: syncResult.userId,
+          isCancelled:
+            syncResult.localStatus ===
+            "cancelled",
+        });
+
         break;
       }
 
       case "customer.subscription.deleted": {
-        await syncSubscription(
+        const syncResult = await syncSubscription(
           event.data.object,
         );
+
+        await syncCommissions({
+          clientUserId: syncResult.userId,
+          isCancelled: true,
+        });
 
         break;
       }
@@ -600,9 +664,16 @@ Deno.serve(async (req) => {
               subscriptionId,
             );
 
-          await syncSubscription(
+          const syncResult = await syncSubscription(
             stripeSubscription,
           );
+
+          await syncCommissions({
+            clientUserId: syncResult.userId,
+            isCancelled:
+              syncResult.localStatus ===
+              "cancelled",
+          });
         }
 
         break;
@@ -626,6 +697,8 @@ Deno.serve(async (req) => {
           await syncSubscription(
             stripeSubscription,
           );
+
+          // Pagamento falhado: não gera comissões novas.
         }
 
         break;
