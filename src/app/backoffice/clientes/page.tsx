@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Copy, Check, LockKeyhole, Users } from "lucide-react";
+import { ArrowLeft, Copy, Check, LockKeyhole, Mail, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import BackofficeShell from "@/components/BackofficeShell";
 import CommercialTermsGate from "@/components/CommercialTermsGate";
@@ -114,24 +114,37 @@ export default function MyClientsPage() {
       </div>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60">
-        <div className="grid grid-cols-[minmax(0,1fr)_110px_120px_120px_130px] border-b border-slate-800 px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <div className="grid grid-cols-[minmax(0,1fr)_110px_120px_120px_130px_110px] border-b border-slate-800 px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
           <span>Cliente</span>
           <span>Plano</span>
           <span>Tipo</span>
           <span>Estado</span>
           <span className="text-right">Comissão</span>
+          <span className="text-right">Ação</span>
         </div>
         {clients.length ? (
           clients.map((client) => (
             <div
               key={client.client_user_id}
-              className="grid grid-cols-[minmax(0,1fr)_110px_120px_120px_130px] items-center border-b border-slate-800 px-5 py-4 last:border-0 text-sm"
+              className="grid grid-cols-[minmax(0,1fr)_110px_120px_120px_130px_110px] items-center border-b border-slate-800 px-5 py-4 last:border-0 text-sm"
             >
               <span className="break-all text-slate-300">{client.client_email || client.client_user_id}</span>
               <span className="text-slate-400">{client.plan_id || "—"}</span>
               <span className="text-slate-400">{client.is_annual ? "Anual" : "Mensal"}</span>
               <span className="text-slate-400">{client.status || "—"}</span>
               <span className="text-right font-semibold text-emerald-300">{formatEuro(client.commission_total)}</span>
+              <span className="flex justify-end">
+                {client.client_email ? (
+                  <Link
+                    href={`/backoffice/emails?to=${encodeURIComponent(client.client_email)}&subject=${encodeURIComponent("O teu acompanhamento Adjudata")}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-400/30 px-2.5 py-1.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-400/10"
+                  >
+                    <Mail size={13} /> Email
+                  </Link>
+                ) : (
+                  <span className="text-xs text-slate-600">—</span>
+                )}
+              </span>
             </div>
           ))
         ) : (

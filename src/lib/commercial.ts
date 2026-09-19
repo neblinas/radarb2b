@@ -204,3 +204,118 @@ export async function acceptTerms(): Promise<number> {
   if (error) throw error;
   return data as unknown as number;
 }
+
+// ---------------------------------------------------------------------------
+// Correio comercial (envio)
+// ---------------------------------------------------------------------------
+
+export const COMMERCIAL_FROM_EMAIL = "comercial@adjudata.pt";
+
+export type MailSender = {
+  user_id: string;
+  display_name: string;
+  reply_to: string | null;
+  signature_note: string;
+};
+
+export type SentEmail = {
+  id: string;
+  to_email: string;
+  subject: string;
+  status: "queued" | "sent" | "failed";
+  error: string | null;
+  sent_at: string | null;
+  created_at: string;
+  created_by_email: string | null;
+};
+
+export type EmailDetail = {
+  id: string;
+  to_email: string;
+  cc: string | null;
+  subject: string;
+  body: string;
+  rendered_body: string;
+  status: "queued" | "sent" | "failed";
+  error: string | null;
+  sent_at: string | null;
+  created_at: string;
+};
+
+export async function fetchMySender(): Promise<MailSender | null> {
+  const { data, error } = await supabase.rpc("commercial_ensure_sender");
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return (row ?? null) as MailSender | null;
+}
+
+export async function updateMySender(input: {
+  displayName: string;
+  replyTo?: string;
+  signatureNote?: string;
+}): Promise<MailSender> {
+  const { data, error } = await supabase.rpc("commercial_update_sender", {
+    p_display_name: input.displayName,
+    p_reply_to: input.replyTo ?? null,
+    p_signature_note: input.signatureNote ?? null,
+  });
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return row as MailSender;
+}
+
+export async function fetchMySentEmails(limit = 100): Promise<SentEmail[]> {
+  const { data, error } = await supabase.rpc("commercial_my_sent_emails", {
+    p_limit: limit,
+  });
+  if (error) throw error;
+  return (data ?? []) as SentEmail[];
+}
+
+export async function fetchEmailDetail(id: string): Promise<EmailDetail | null> {
+  const { data, error } = await supabase.rpc("commercial_email_detail", {
+    p_message_id: id,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as EmailDetail[];
+  return rows[0] ?? null;
+}
+
+export type SendEmailInput = {
+  to: string;
+  subject: string;
+  body: string;
+  cc?: string;
+  companyId?: string;
+  clientUserId?: string;
+  prospectId?: string;
+};
+
+/** Envia email via Edge Function (remetente único + assinatura automática). */
+export async function sendCommercialEmail(
+  input: SendEmailInput,
+): Promise<{ ok: boolean; id?: string }> {
+  const { data, error } = await supabase.functions.invoke(
+    "send-commercial-email",
+    {
+      body: {
+        to: input.to,
+        subject: input.subject,
+        body: input.body,
+        cc: input.cc ?? null,
+        company_id: input.companyId ?? null,
+        client_user_id: input.clientUserId ?? null,
+        prospect_id: input.prospectId ?? null,
+      },
+    },
+  );
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return { ok: true, id: data?.id };
+}
+
+export const emailStatusLabel: Record<string, string> = {
+  queued: "Em fila",
+  sent: "Enviado",
+  failed: "Falhou",
+};

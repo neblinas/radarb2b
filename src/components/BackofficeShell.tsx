@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BellRing, BriefcaseBusiness, Building2, ClipboardList, Coins, LayoutDashboard, LifeBuoy, LogOut, Menu, Search, Settings2, ShieldCheck, UserPlus, Users, X } from "lucide-react";
+import { BarChart3, BellRing, BriefcaseBusiness, Building2, ClipboardList, Coins, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, Search, Settings2, ShieldCheck, UserPlus, Users, X } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -13,7 +13,8 @@ export const backofficeNav = [
   { label: "Novo colaborador", href: "/backoffice/colaboradores/novo", icon: UserPlus },
   { label: "Planos e utilização", href: "/backoffice/planos", icon: BarChart3 },
     { label: "Ganhos da equipa", href: "/backoffice/comissoes", icon: BarChart3 },
-  { label: "Os meus clientes", href: "/backoffice/clientes", icon: Users },
+    { label: "Os meus clientes", href: "/backoffice/clientes", icon: Users },
+    { label: "Os meus emails", href: "/backoffice/emails", icon: Mail },
   { label: "Gestão de comissões", href: "/backoffice/comissoes/gestao", icon: Coins },
   { label: "Oportunidades", href: "/backoffice/oportunidades", icon: Building2 },
     { label: "Leads comerciais", href: "/backoffice/leads", icon: BriefcaseBusiness },
