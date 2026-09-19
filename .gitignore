@@ -45,7 +45,6 @@ next-env.d.ts
 *.bak_*
 *.backup_*
 *.backup
-*.py
 
 test-results/
 playwright-report/
