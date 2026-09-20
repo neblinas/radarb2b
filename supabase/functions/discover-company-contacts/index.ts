@@ -5,18 +5,51 @@ const maxPages = 5;
 const maxBytes = 1_000_000;
 const userAgent = "Adjudata-ContactDiscovery/1.0 (+https://adjudata.pt)";
 
-function isPrivateAddress(address: string) {
-  const value = address.toLowerCase();
-  return value === "::1" || value.startsWith("fe80:") || value.startsWith("fc") || value.startsWith("fd") || /^(127\.|10\.|192\.168\.|169\.254\.|0\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(value);
+function isPrivateHostname(hostname: string) {
+  const host = hostname.toLowerCase();
+  if (["localhost", "metadata.google.internal", "169.254.169.254"].includes(host)) return true;
+  if (host.endsWith(".local") || host.endsWith(".internal")) return true;
+  // IP literal privado/reservado (evita SSRF quando o site é indicado por IP).
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    return /^(127\.|10\.|192\.168\.|169\.254\.|0\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(host);
+  }
+  if (host.includes(":")) {
+    // IPv6 local/privado.
+    return host === "::1" || host.startsWith("fe80:") || host.startsWith("fc") || host.startsWith("fd");
+  }
+  return false;
+}
+
+/** Normaliza diferenças triviais de URL (www, barra final, maiúsculas no host). */
+function normalizeUrl(value: string): string {
+  const parsed = new URL(value);
+  parsed.hostname = parsed.hostname.toLowerCase();
+  return parsed.toString().replace(/\/$/, "");
+}
+
+function sameWebsite(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  try {
+    const na = normalizeUrl(a);
+    const nb = normalizeUrl(b);
+    if (na === nb) return true;
+    // Tolerar www. de um dos lados.
+    const strip = (u: string) => u.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+    return strip(a) === strip(b);
+  } catch {
+    return false;
+  }
 }
 
 async function safeUrl(value: string, expectedHost?: string) {
   const parsed = new URL(value);
   if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) throw new Error("Invalid website URL");
-  if (expectedHost && parsed.hostname !== expectedHost) throw new Error("Cross-domain request blocked");
-  if (["localhost", "metadata.google.internal", "169.254.169.254"].includes(parsed.hostname.toLowerCase())) throw new Error("Private host blocked");
-  const records = await Deno.resolveDns(parsed.hostname, "A");
-  if (!records.length || records.some(isPrivateAddress)) throw new Error("Private network blocked");
+  if (isPrivateHostname(parsed.hostname)) throw new Error("Private host blocked");
+  if (expectedHost) {
+    const a = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    const b = expectedHost.toLowerCase().replace(/^www\./, "");
+    if (a !== b) throw new Error("Cross-domain request blocked");
+  }
   return parsed;
 }
 
@@ -67,13 +100,14 @@ Deno.serve(async (request) => {
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authorization } } });
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error("Invalid session");
-    const { data: profile } = await supabase.from("company_public_profiles").select("website, website_verified").eq("company_id", company_id).maybeSingle();
-    if (!profile?.website_verified || profile.website !== website) throw new Error("Website must be confirmed first");
+        const { data: profile } = await supabase.from("company_public_profiles").select("website, website_verified").eq("company_id", company_id).maybeSingle();
+    if (!profile?.website_verified || !sameWebsite(profile.website, website)) throw new Error("Website must be confirmed first");
     const root = await safeUrl(website);
     const robotsUrl = new URL("/robots.txt", root);
     const robots = await fetch(robotsUrl, { headers: { "User-Agent": userAgent }, signal: AbortSignal.timeout(4000) }).then((response) => response.ok ? response.text() : "").catch(() => "");
     if (/user-agent:\s*\*[^]*?disallow:\s*\//i.test(robots)) throw new Error("Website does not allow automated discovery");
-    const candidates = [root.toString(), ...["/contactos", "/contact", "/contacts", "/sobre", "/about", "/empresa"].map((path) => new URL(path, root).toString())].slice(0, maxPages);
+    const paths = ["/contactos", "/contactos/", "/contact", "/contacts", "/sobre", "/about", "/empresa"];
+    const candidates = [root.toString(), ...paths.map((path) => new URL(path, root).toString())].slice(0, maxPages);
     const found = [] as ReturnType<typeof contactsFromHtml>;
     for (const candidate of candidates) { try { found.push(...contactsFromHtml(await fetchPublic(await safeUrl(candidate, root.hostname), root.hostname), candidate)); } catch { /* Unavailable pages are skipped. */ } }
     const unique = [...new Map(found.map((item) => [`${item.contact_type}:${item.normalized_value}`, item])).values()];

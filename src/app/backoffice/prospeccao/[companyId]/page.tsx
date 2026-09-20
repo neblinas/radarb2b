@@ -41,9 +41,12 @@ export default function ProspectDetailPage({ params }: { params: Promise<{ compa
     if (snapshotResult.error || !snapshotResult.data) { setError("Não foi possível carregar este prospect."); setLoading(false); return; }
     const current = snapshotResult.data as Snapshot;
     setProspect(current); setWebsite(current.website || ""); setSourceUrl(current.website_source_url || ""); setComponents((componentsResult.data ?? []) as ScoreComponent[]);
+        // Contactos públicos pertencem à EMPRESA, não ao prospect: carregar sempre.
+    const contactResult = await supabase.from("company_public_contacts").select("id, contact_type, value, source_url, confidence, verified").eq("company_id", companyId).eq("active", true);
+    setContacts((contactResult.data ?? []) as Contact[]);
     if (current.prospect_id) {
-      const [contactResult, activityResult] = await Promise.all([supabase.from("company_public_contacts").select("id, contact_type, value, source_url, confidence, verified").eq("company_id", companyId).eq("active", true), supabase.from("sales_activities").select("id, activity_type, notes, occurred_at").eq("prospect_id", current.prospect_id).order("occurred_at", { ascending: false })]);
-      setContacts((contactResult.data ?? []) as Contact[]); setActivities((activityResult.data ?? []) as Activity[]);
+      const activityResult = await supabase.from("sales_activities").select("id, activity_type, notes, occurred_at").eq("prospect_id", current.prospect_id).order("occurred_at", { ascending: false });
+      setActivities((activityResult.data ?? []) as Activity[]);
     }
     setLoading(false);
   });
