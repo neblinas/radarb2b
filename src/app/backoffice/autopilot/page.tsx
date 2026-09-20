@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, LockKeyhole } from "lucide-react";
+import { ArrowLeft, BookOpen, LockKeyhole } from "lucide-react";
 import { useEffect, useState } from "react";
 import BackofficeShell from "@/components/BackofficeShell";
 import AutopilotControl from "@/components/AutopilotControl";
@@ -26,7 +26,10 @@ export default function AutopilotPage() {
 
   return (
     <BackofficeShell email={identity.email} role={identity.role}>
-      <Link href="/backoffice" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-cyan-300"><ArrowLeft size={15} /> Back-office</Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/backoffice" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-cyan-300"><ArrowLeft size={15} /> Back-office</Link>
+        <Link href="/backoffice/autopilot/manual" className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm font-medium text-slate-300 hover:border-cyan-400/30 hover:text-cyan-300"><BookOpen size={15} /> Manual do Autopilot</Link>
+      </div>
       <div className="mt-8">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">Sales Autopilot</p>
         <h1 className="mt-3 text-3xl font-semibold text-white">Painel de controlo</h1>

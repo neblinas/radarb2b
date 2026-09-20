@@ -56,6 +56,23 @@ describe("automation settings", () => {
     ).toBe(false);
   });
 
+  it("lê o kill switch como booleano (não como texto)", () => {
+    // A BD guarda jsonb. Um valor false tem de continuar a ser false.
+    const off = settingsFromRows([{ key: "autopilot_kill_switch", value: false }]);
+    expect(off.autopilot_kill_switch).toBe(false);
+
+    const on = settingsFromRows([{ key: "autopilot_kill_switch", value: true }]);
+    expect(on.autopilot_kill_switch).toBe(true);
+
+    // Se por engano vier texto "false", NÃO pode ser lido como ligado.
+    const textOff = settingsFromRows([{ key: "autopilot_kill_switch", value: "false" }]);
+    expect(textOff.autopilot_kill_switch === true).toBe(false);
+
+    // Se vier texto "true", também não pode confundir o aviso.
+    const textOn = settingsFromRows([{ key: "autopilot_kill_switch", value: "true" }]);
+    expect(textOn.autopilot_kill_switch === true).toBe(false);
+  });
+
   it("exige aprovação humana por omissão no envio real", () => {
     // Default exige aprovação e está em dry-run.
     expect(AUTOMATION_DEFAULTS.autopilot_require_approval).toBe(true);
