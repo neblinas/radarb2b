@@ -111,7 +111,8 @@ Deno.serve(async (request) => {
     const found = [] as ReturnType<typeof contactsFromHtml>;
     for (const candidate of candidates) { try { found.push(...contactsFromHtml(await fetchPublic(await safeUrl(candidate, root.hostname), root.hostname), candidate)); } catch { /* Unavailable pages are skipped. */ } }
     const unique = [...new Map(found.map((item) => [`${item.contact_type}:${item.normalized_value}`, item])).values()];
-    if (unique.length) { const { error } = await supabase.from("company_public_contacts").upsert(unique.map((item) => ({ ...item, company_id })), { onConflict: "company_id,contact_type,normalized_value" }); if (error) throw error; }
+    // Redescoberta reativa contactos (active=true). A validação (verified) mantém-se sempre humana.
+    if (unique.length) { const { error } = await supabase.from("company_public_contacts").upsert(unique.map((item) => ({ ...item, company_id, active: true })), { onConflict: "company_id,contact_type,normalized_value" }); if (error) throw error; }
     return Response.json({ found: unique.length }, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) { return Response.json({ error: error instanceof Error ? error.message : "Contact discovery failed" }, { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
 });
