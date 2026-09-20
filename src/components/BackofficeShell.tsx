@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BellRing, BookOpen, BriefcaseBusiness, Building2, ClipboardList, Coins, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, Search, Settings2, ShieldCheck, UserPlus, Users, X, Zap } from "lucide-react";
+import { BarChart3, BellRing, BookOpen, BriefcaseBusiness, Building2, ClipboardList, Coins, Inbox, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, Search, Settings2, ShieldCheck, UserPlus, Users, X, Zap } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -21,6 +21,7 @@ export const backofficeNav = [
   { label: "Pesquisar empresas", href: "/backoffice/prospeccao", icon: Search },
     { label: "Dashboard de prospeção", href: "/backoffice/prospeccao/dashboard", icon: BarChart3 },
     { label: "Autopilot", href: "/backoffice/autopilot", icon: Zap },
+    { label: "Caixa de entrada", href: "/backoffice/inbox", icon: Inbox },
     { label: "Manual do Autopilot", href: "/backoffice/autopilot/manual", icon: BookOpen },
     { label: "Tickets de suporte", href: "/backoffice/tickets", icon: LifeBuoy },
   { label: "Atividade", href: "/backoffice/atividade", icon: ClipboardList },

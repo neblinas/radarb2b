@@ -316,10 +316,14 @@ async function deliverMessage(
   const html = renderHtml(step.body, unsubscribeUrl, trackingPixel);
 
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  // Reply-To com token (reply+TOKEN@dominio): permite correlacionar a resposta
+  // com o prospect no inbound-email. Deriva o domínio do remetente.
+  const fromDomain = emailDomain(SENDER_FROM.replace(/.*<|>.*/g, "")) || "adjudata.pt";
+  const replyTo = `reply+${token}@${fromDomain}`;
   const resend = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: SENDER_FROM, to: [step.to_email], subject: step.subject, html }),
+    body: JSON.stringify({ from: SENDER_FROM, to: [step.to_email], subject: step.subject, html, reply_to: replyTo }),
   });
 
   if (!resend.ok) {
