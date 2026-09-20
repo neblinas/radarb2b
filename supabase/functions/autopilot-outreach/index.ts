@@ -349,7 +349,13 @@ async function deliverMessage(
 
   await admin.rpc("outreach_register_send", { p_organization_id: organizationId, p_domain: domain });
   await admin.rpc("automation_record_email_event", { p_token: token, p_event_type: "sent" });
-  await admin.rpc("automation_mark_contacted_service", { p_prospect_id: step.prospect_id, p_state: step.next_step <= 1 ? "contacted" : `followup_${step.next_step - 1}` });
+  await admin.rpc("automation_mark_contacted_service", {
+    p_prospect_id: step.prospect_id,
+    p_state: step.next_step <= 1 ? "contacted" : `followup_${step.next_step - 1}`,
+    p_to_email: step.to_email,
+    p_subject: step.subject,
+    p_step_position: step.next_step,
+  });
   await admin.rpc("automation_log", {
     p_level: "info", p_step: "outreach_sent",
     p_message: `enviado para ${step.to_email} (passo ${step.next_step})`,
