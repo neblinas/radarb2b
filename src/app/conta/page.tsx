@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { touchActivity } from "@/lib/autopilotDashboard";
 
 type AccountData = {
   email: string;
@@ -74,10 +75,13 @@ export default function ContaPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
+            if (!user) {
         router.push("/login");
         return;
       }
+
+      // Registo de atividade (last_seen) — não bloqueia o carregamento da conta.
+      void touchActivity();
 
       const [
         profileResult,

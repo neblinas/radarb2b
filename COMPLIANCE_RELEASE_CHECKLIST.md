@@ -35,6 +35,7 @@ Este checklist acompanha a implementação técnica. Não substitui revisão jur
 - [ ] Definir roles `admin`, `commercial_manager` e `commercial` no `app_metadata` através de operação segura.
 - [ ] Validar convites, recuperação de conta, revogação de acesso e logs de auditoria.
 - [ ] Confirmar que colaboradores só veem contas e oportunidades autorizadas.
+- [ ] Aplicar as migrações do autopilot e validar em staging (ver `STAGING_AUTOPILOT.md`); manter a aprovação humana ligada até haver processo de oposição/erro definido.
 
 ## Pós-publicação
 

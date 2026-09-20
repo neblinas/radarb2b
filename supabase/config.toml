@@ -1,7 +1,38 @@
 project_id = "swelyfjlnvpxgahchpxc"
 
-[functions.invite-commercial-member]
+# NOTA IMPORTANTE SOBRE verify_jwt
+# O default do Supabase CLI é verify_jwt = true. As funções abaixo são invocadas
+# SEM um JWT de utilizador (cron, webhooks ou links públicos de email), pelo que
+# TÊM de declarar verify_jwt = false — caso contrário falham com 401. Cada uma
+# valida a sua própria autenticação por segredo partilhado/token.
+#
+# Funções com JWT de utilizador autenticado (create-checkout-session,
+# invite-commercial-member, send-commercial-email, discover-company-contacts)
+# mantêm o default (true) e NÃO são listadas aqui.
+
+# --- Cron (header x-autopilot-secret) ---
+[functions.autopilot-run]
 verify_jwt = false
 
-[functions.discover-company-contacts]
-verify_jwt = true
+[functions.autopilot-outreach]
+verify_jwt = false
+
+[functions.autopilot-lifecycle]
+verify_jwt = false
+
+# --- Webhooks (header x-*-secret) ---
+[functions.resend-webhook]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.inbound-email]
+verify_jwt = false
+
+# --- Links públicos em emails (token na query string) ---
+[functions.email-track]
+verify_jwt = false
+
+[functions.email-unsubscribe]
+verify_jwt = false
