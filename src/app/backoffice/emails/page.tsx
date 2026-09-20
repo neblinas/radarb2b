@@ -29,6 +29,7 @@ import {
   sendCommercialEmail,
   updateMySender,
 } from "@/lib/commercial";
+import { fetchFirstContactTemplate, personalizeTemplate } from "@/lib/outreach";
 import { supabase } from "@/lib/supabase";
 
 const allowedRoles = new Set(["admin", "commercial", "commercial_manager"]);
@@ -112,6 +113,45 @@ function CommercialEmailContent() {
       setState("allowed");
     });
   }, [loadSender, loadOutbox]);
+
+  // Pré-preenche o compositor com o template de prospeção quando vem da ficha
+  // da empresa (?company=<id>). Personaliza com os dados reais (sem inventar).
+  useEffect(() => {
+    const companyId = searchParams.get("company");
+    if (!companyId) return;
+    let active = true;
+    void (async () => {
+      try {
+        const [template, snapshot] = await Promise.all([
+          fetchFirstContactTemplate(),
+          supabase.rpc("prospect_snapshot", { p_company_id: companyId }),
+        ]);
+        if (!active || !template) return;
+        const s = (snapshot.data ?? {}) as {
+          name?: string; nif?: string | null; participation_12m?: number;
+          award_count?: number; total_award_value?: number; cpv_codes?: string[];
+        };
+        const facts = {
+          company: s.name || "",
+          nif: s.nif ?? null,
+          participation_12m: s.participation_12m ?? 0,
+          awards: s.award_count ?? 0,
+          value: s.total_award_value != null
+            ? Number(s.total_award_value).toLocaleString("pt-PT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })
+            : "—",
+          cpv: (s.cpv_codes || []).slice(0, 4).join(", "),
+        };
+        setForm((prev) => ({
+          ...prev,
+          subject: personalizeTemplate(template.subject, facts),
+          body: personalizeTemplate(template.body, facts),
+        }));
+      } catch {
+        /* pré-preenchimento é best-effort */
+      }
+    })();
+    return () => { active = false; };
+  }, [searchParams]);
 
   async function handleSend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

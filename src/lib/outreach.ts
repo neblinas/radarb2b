@@ -89,3 +89,41 @@ export const campaignStatusLabel: Record<string, string> = {
   paused: "Pausada",
   archived: "Arquivada",
 };
+
+/** Dados reais da empresa para personalização do template (sem inventar). */
+export type TemplateFacts = {
+  company: string;
+  nif: string | null;
+  participation_12m: number;
+  awards: number;
+  value: string;
+  cpv: string;
+};
+
+/**
+ * Substitui as variáveis do template pelos dados reais da empresa.
+ * Espelha o `personalize()` do worker autopilot-outreach.
+ */
+export function personalizeTemplate(text: string, facts: TemplateFacts): string {
+  return text
+    .replaceAll("{company}", facts.company || "a vossa empresa")
+    .replaceAll("{nif}", facts.nif || "—")
+    .replaceAll("{participation_12m}", String(facts.participation_12m ?? 0))
+    .replaceAll("{awards}", String(facts.awards ?? 0))
+    .replaceAll("{value}", facts.value || "—")
+    .replaceAll("{cpv}", facts.cpv || "diversos");
+}
+
+/** Devolve o template de primeiro contacto (nome contém "Primeiro contacto"), ativo. */
+export async function fetchFirstContactTemplate(): Promise<EmailTemplate | null> {
+  const { data, error } = await supabase
+    .from("email_templates")
+    .select("id,name,subject,body,version,active,created_at")
+    .eq("active", true)
+    .ilike("name", "%primeiro contacto%")
+    .order("version", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as EmailTemplate | null;
+}
