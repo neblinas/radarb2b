@@ -4,11 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ContaPage from "@/app/conta/page";
 
 const mocks = vi.hoisted(() => ({
-  getUser: vi.fn(),
+    getUser: vi.fn(),
   getSession: vi.fn(),
   signOut: vi.fn(),
   from: vi.fn(),
   invoke: vi.fn(),
+  rpc: vi.fn(),
   push: vi.fn(),
   router: null as null | { push: ReturnType<typeof vi.fn> },
 }));
@@ -39,7 +40,8 @@ vi.mock("@/lib/supabase", () => ({
       getSession: mocks.getSession,
       signOut: mocks.signOut,
     },
-    from: mocks.from,
+        from: mocks.from,
+    rpc: mocks.rpc,
     functions: {
       invoke: mocks.invoke,
     },
@@ -104,9 +106,10 @@ describe("ContaPage", () => {
         },
       },
     });
-    mocks.getSession.mockResolvedValue({
+        mocks.getSession.mockResolvedValue({
       data: { session: { access_token: "session-test" } },
     });
+    mocks.rpc.mockResolvedValue({ data: null, error: null });
   });
 
   it("redireciona para login quando não existe sessão", async () => {
