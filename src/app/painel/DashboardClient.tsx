@@ -15,6 +15,7 @@ import {
   Landmark,
   SearchCheck,
   ShieldCheck,
+  Swords,
   Users,
 } from "lucide-react";
 
@@ -49,6 +50,12 @@ const modules = [
     description: "Gere os alertas automáticos criados a partir das tuas pesquisas.",
     icon: BellRing,
     href: "/alertas",
+  },
+  {
+    title: "Análise de concorrência",
+    description: "Vê com quem competes nos procedimentos e onde há mais disputa.",
+    icon: Swords,
+    href: "/concorrencia",
   },
   {
     title: "Planos Adjudata",

@@ -11,6 +11,7 @@ import {
   SearchCheck,
   Settings,
   Handshake,
+  Swords,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -42,6 +43,11 @@ const navItems = [
     label: "Alertas",
     href: "/alertas",
     icon: BellRing,
+  },
+  {
+    label: "Concorrência",
+    href: "/concorrencia",
+    icon: Swords,
   },
   {
     label: "Planos e preços",
