@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Inbox, Loader2, Mail, RefreshCw } from "lucide-react";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BackofficeShell from "@/components/BackofficeShell";
 import { supabase } from "@/lib/supabase";
 import {
@@ -34,37 +34,44 @@ export default function InboxPage() {
   const [loadingThread, setLoadingThread] = useState(false);
   const [error, setError] = useState("");
 
-  const load = useEffectEvent(async () => {
-    setLoading(true);
-    setError("");
-    const { data: userData } = await supabase.auth.getUser();
-    const role = typeof userData.user?.app_metadata.role === "string" ? userData.user.app_metadata.role : "";
-    setIdentity({ email: userData.user?.email || "", role });
-    if (!userData.user || !["admin", "commercial", "commercial_manager"].includes(role)) {
-      setError("Acesso reservado.");
+  const load = useCallback(
+    async (options?: { keepSelection?: boolean }) => {
+      setLoading(true);
+      setError("");
+      const { data: userData } = await supabase.auth.getUser();
+      const role = typeof userData.user?.app_metadata.role === "string" ? userData.user.app_metadata.role : "";
+      setIdentity({ email: userData.user?.email || "", role });
+      if (!userData.user || !["admin", "commercial", "commercial_manager"].includes(role)) {
+        setError("Acesso reservado.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const [list, m] = await Promise.all([fetchConversations(100), fetchInboundMetrics()]);
+        setConversations(list);
+        setMetrics(m);
+        if (!options?.keepSelection && list.length) {
+          setSelected((current) => current ?? list[0].id);
+        }
+      } catch {
+        setError("Não foi possível carregar a caixa de entrada.");
+      }
       setLoading(false);
-      return;
-    }
-    try {
-      const [list, m] = await Promise.all([fetchConversations(100), fetchInboundMetrics()]);
-      setConversations(list);
-      setMetrics(m);
-      if (list.length && !selected) setSelected(list[0].id);
-    } catch {
-      setError("Não foi possível carregar a caixa de entrada.");
-    }
-    setLoading(false);
-  });
+    },
+    [],
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     if (!selected) return;
     let active = true;
-    setLoadingThread(true);
+    const timer = window.setTimeout(() => {
+      if (active) setLoadingThread(true);
+    }, 0);
     void (async () => {
       try {
         const msgs = await fetchInboundMessages(selected);
@@ -83,6 +90,7 @@ export default function InboxPage() {
     })();
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, [selected]);
 
@@ -99,7 +107,7 @@ export default function InboxPage() {
           <h1 className="mt-3 flex items-center gap-2 text-3xl font-semibold text-white"><Inbox size={28} className="text-cyan-300" /> Caixa de entrada</h1>
           <p className="mt-2 text-sm text-slate-500">Respostas às campanhas, classificadas automaticamente.</p>
         </div>
-        <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:border-cyan-400/40 hover:text-cyan-200"><RefreshCw size={15} /> Atualizar</button>
+        <button onClick={() => void load({ keepSelection: true })} className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:border-cyan-400/40 hover:text-cyan-200"><RefreshCw size={15} /> Atualizar</button>
       </header>
 
       {error ? <p className="mt-5 rounded-xl border border-rose-400/20 bg-rose-400/5 p-4 text-sm text-rose-200">{error}</p> : null}
