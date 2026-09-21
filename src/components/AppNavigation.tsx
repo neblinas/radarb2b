@@ -10,11 +10,11 @@ import {
   Menu,
   SearchCheck,
   Settings,
-  ShieldCheck,
   Handshake,
   X,
 } from "lucide-react";
 import { useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 import { brand } from "@/lib/brand";
 
 const navItems = [
@@ -69,24 +69,10 @@ export default function AppNavigation() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-[#08111f]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
-            <Link
-              href="/"
-              className="flex items-center gap-3"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
-                <ShieldCheck size={19} />
-              </div>
-
-                            <div className="leading-tight">
-                <div className="text-sm font-bold tracking-[0.14em] text-white">
-                  {brand.wordmark}
-                </div>
-                <div className="hidden text-[10px] uppercase tracking-[0.15em] text-slate-500 sm:block">
-                  Procurement Intelligence
-                </div>
-              </div>
+            <Link href="/" aria-label={brand.wordmark}>
+              <BrandLogo size={36} />
             </Link>
 
             <nav className="hidden items-center gap-1 lg:flex">

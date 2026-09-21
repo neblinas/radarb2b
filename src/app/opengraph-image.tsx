@@ -28,17 +28,20 @@ export default function OpengraphImage() {
               width: 64,
               height: 64,
               borderRadius: 18,
-              background: "rgba(34,211,238,0.12)",
+              background: "linear-gradient(135deg, rgba(34,211,238,0.16), rgba(34,211,238,0.04))",
               border: "1px solid rgba(34,211,238,0.30)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#22d3ee",
-              fontSize: 34,
-              fontWeight: 700,
             }}
           >
-            A
+            <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+              <rect x="6" y="19" width="4.5" height="8" rx="1.5" fill="#22d3ee" opacity="0.55" />
+              <rect x="13.75" y="14" width="4.5" height="13" rx="1.5" fill="#22d3ee" opacity="0.8" />
+              <rect x="21.5" y="9" width="4.5" height="18" rx="1.5" fill="#22d3ee" />
+              <path d="M6.5 15.5L13.5 10L20 12.5L26 5.5" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+              <circle cx="26" cy="5.5" r="2.4" fill="#22d3ee" />
+            </svg>
           </div>
           <div
             style={{
