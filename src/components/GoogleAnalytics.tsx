@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "radar_cookie_consent";
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
 
 function hasAnalyticsConsent(): boolean {
   if (typeof window === "undefined") return false;
@@ -42,13 +43,13 @@ export default function GoogleAnalytics() {
     };
   }, []);
 
-  if (!GA_ID || !enabled) return null;
+      if (!(GA_ID || ADS_ID) || !enabled) return null;
 
   return (
     <>
       <Script
         async
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID || ADS_ID}`}
         strategy="afterInteractive"
       />
       <Script id="google-analytics" strategy="afterInteractive">
@@ -56,7 +57,8 @@ export default function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${GA_ID}');
+          ${GA_ID ? `gtag('config', '${GA_ID}');` : ""}
+          ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ""}
         `}
       </Script>
     </>

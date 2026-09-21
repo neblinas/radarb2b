@@ -6,9 +6,22 @@
 |---|---|
 | Plataforma | Google Analytics 4 (GA4) |
 | Measurement ID | **`G-EH77XFY30W`** |
+| Google Ads (conversões) | **`AW-18462196845`** |
 
-> Este ID é **público** (vai para o HTML da página). Não é secreto.
-> Deve ser exposto via variável de ambiente `NEXT_PUBLIC_GA_MEASUREMENT_ID`.
+> Ambos os IDs são **públicos** (vão para o HTML da página). Não são secretos.
+> Expostos via `NEXT_PUBLIC_GA_MEASUREMENT_ID` e `NEXT_PUBLIC_GOOGLE_ADS_ID`.
+
+## Conversões do Google Ads
+
+A conversão de **compra** dispara em `/conta` quando o utilizador volta da
+Stripe com `?checkout=success` (ver `src/app/conta/page.tsx` e
+`src/lib/googleAds.ts`).
+
+- Só dispara **após consentimento de cookies de análise** (RGPD).
+- O `gtag.js` tem de carregar **também** o ID do Ads (`gtag('config','AW-...')`),
+  senão o evento `conversion` não é atribuído. Ver `components/GoogleAnalytics.tsx`.
+- `transaction_id` não é enviado por omissão; para atribuição por transação,
+  incluir o ID da sessão Stripe no `success_url` e passá-lo aqui.
 
 ## Plano de implementação (a fazer)
 

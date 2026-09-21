@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { touchActivity } from "@/lib/autopilotDashboard";
+import { trackPurchaseConversion } from "@/lib/googleAds";
 
 type AccountData = {
   email: string;
@@ -37,9 +38,11 @@ export default function ContaPage() {
   const [actionError, setActionError] = useState("");
   const [processingAction, setProcessingAction] =
     useState<string | null>(null);
-  const [checkoutMessage, setCheckoutMessage] = useState<
+      const [checkoutMessage, setCheckoutMessage] = useState<
     "success" | "cancelled" | null
   >(null);
+  // Garante que a conversão dispara no máximo uma vez por montagem.
+  const conversionTracked = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(
@@ -53,6 +56,13 @@ export default function ContaPage() {
       checkout === "cancelled"
     ) {
       queueMicrotask(() => setCheckoutMessage(checkout));
+
+      // Conversão Google Ads — só na primeira vez e apenas se o gtag
+      // estiver carregado (ou seja, após consentimento de cookies).
+      if (checkout === "success" && !conversionTracked.current) {
+        conversionTracked.current = true;
+        trackPurchaseConversion();
+      }
 
       const cleanUrl = new URL(
         window.location.href,
