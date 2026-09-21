@@ -58,7 +58,7 @@ export default function PlansPage() {
             aria-pressed={billing === "annual"}
             className={`rounded-lg px-4 py-2 font-medium transition ${billing === "annual" ? "bg-cyan-400 text-slate-950" : "text-slate-400 hover:text-white"}`}
           >
-            Anual <span className={billing === "annual" ? "text-slate-900" : "text-cyan-300"}>− até 15%</span>
+            Anual <span className={billing === "annual" ? "text-slate-900" : "text-cyan-300"}>− até {Math.max(...plans.map((plan) => plan.annualDiscount))}%</span>
           </button>
         </div>
 

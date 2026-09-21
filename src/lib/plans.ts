@@ -1,7 +1,7 @@
 // Planos do Adjudata — fonte única de verdade no frontend.
 //
 // Esta tabela espelha EXATAMENTE os entitlements definidos no backend em
-// `public.plans` (ver supabase/migrations/20260927090000_plan_entitlements.sql).
+// `public.plans` (ver supabase/migrations/20260928090000_plan_pricing_v2.sql).
 // Sempre que alterares preços ou limites:
 //   1. Atualiza aqui.
 //   2. Atualiza a migração SQL correspondente.
@@ -11,9 +11,9 @@
 //
 // Tabela canónica (preços sem IVA):
 //   | Plano   | Mês | Ano | Pesquisas/mês | Oportunidades | Pesquisas guardadas | Alertas |
-//   | Free    | 0   | —   | 50            | 10            | 5                   | 1       |
-//   | Starter | 19  | 205 | 200           | 100           | 25                  | 5       |
-//   | Pro     | 39  | 398 | ilimitadas    | 500           | 100                 | 20      |
+//   | Free    | 0   | —   | 10            | 3             | 1                   | 1       |
+//   | Starter | 29  | 290 | 250           | 100           | 25                  | 5       |
+//   | Pro     | 69  | 690 | ilimitadas    | 500           | 100                 | 20      |
 
 export type PlanId = "free" | "starter" | "pro";
 export type PaidPlanId = "starter" | "pro";
@@ -51,15 +51,15 @@ export const plans: readonly Plan[] = [
     priceMonthly: 0,
     priceAnnual: 0,
     annualDiscount: 0,
-    description: "Para conhecer o Adjudata e testar uma rotina de pesquisa.",
-    maxSearchesMonth: 50,
-    maxSavedOpportunities: 10,
-    maxSavedSearches: 5,
+    description: "Para experimentar o Adjudata e perceber o valor.",
+    maxSearchesMonth: 10,
+    maxSavedOpportunities: 3,
+    maxSavedSearches: 1,
     maxAlerts: 1,
     features: [
-      "50 pesquisas por mês",
-      "10 oportunidades guardadas",
-      "5 pesquisas guardadas",
+      "10 pesquisas por mês",
+      "3 oportunidades guardadas",
+      "1 pesquisa guardada",
       "1 alerta",
     ],
     featured: false,
@@ -67,17 +67,17 @@ export const plans: readonly Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    priceMonthly: 19,
-    priceAnnual: 205,
-    annualDiscount: 10,
+    priceMonthly: 29,
+    priceAnnual: 290,
+    annualDiscount: 17,
     description:
-      "Para empresas pequenas que precisam de acompanhar oportunidades com consistência.",
-    maxSearchesMonth: 200,
+      "Para empresas que acompanham regularmente contratação pública.",
+    maxSearchesMonth: 250,
     maxSavedOpportunities: 100,
     maxSavedSearches: 25,
     maxAlerts: 5,
     features: [
-      "200 pesquisas por mês",
+      "250 pesquisas por mês",
       "100 oportunidades guardadas",
       "25 pesquisas guardadas",
       "5 alertas",
@@ -88,11 +88,11 @@ export const plans: readonly Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    priceMonthly: 39,
-    priceAnnual: 398,
-    annualDiscount: 15,
+    priceMonthly: 69,
+    priceAnnual: 690,
+    annualDiscount: 17,
     description:
-      "Para equipas comerciais que transformam contratação pública numa rotina de crescimento.",
+      "Para empresas que querem intelligence comercial avançada.",
     maxSearchesMonth: null,
     maxSavedOpportunities: 500,
     maxSavedSearches: 100,
@@ -140,3 +140,4 @@ export function planSummarySentence(): string {
     })
     .join("; ");
 }
+
