@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { brand } from "@/lib/brand";
+import { formatEuros, plans } from "@/lib/plans";
 import { siteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -59,30 +60,6 @@ const audience = [
   { icon: Building2, title: "PME e empresas fornecedoras", text: "Para quem quer encontrar contratos públicos e abordar as entidades certas." },
   { icon: Users, title: "Equipas comerciais", text: "Para quem trata contratação pública como um canal de vendas recorrente." },
   { icon: Target, title: "Empresas de serviços", text: "Para quem precisa de perceber padrões de compra e concorrência por setor." },
-];
-
-const plans = [
-  {
-    name: "Free",
-    price: "0 €",
-    suffix: "para começar",
-    features: ["50 pesquisas por mês", "10 oportunidades guardadas", "5 pesquisas guardadas", "1 alerta"],
-    featured: false,
-  },
-  {
-    name: "Starter",
-    price: "19 €",
-    suffix: "/ mês",
-    features: ["200 pesquisas por mês", "100 oportunidades guardadas", "25 pesquisas guardadas", "5 alertas", "Acesso a entidades e concorrência"],
-    featured: true,
-  },
-  {
-    name: "Pro",
-    price: "39 €",
-    suffix: "/ mês",
-    features: ["Pesquisas ilimitadas", "500 oportunidades guardadas", "100 pesquisas guardadas", "20 alertas", "Contexto completo de procedimentos"],
-    featured: false,
-  },
 ];
 
 const trust = [
@@ -219,44 +196,47 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            {plans.map((plan) => (
-              <article
-                key={plan.name}
-                className={`relative flex flex-col rounded-2xl border p-6 ${
-                  plan.featured ? "border-cyan-400/50 bg-cyan-400/[0.08]" : "border-slate-800 bg-slate-900/50"
-                }`}
-              >
-                {plan.featured ? (
-                  <span className="absolute right-5 top-5 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-200">
-                    Mais escolhido
-                  </span>
-                ) : null}
-                <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
-                <p className="mt-5 text-4xl font-semibold text-white">
-                  {plan.price}
-                  <span className="ml-1 text-sm font-normal text-slate-500">{plan.suffix}</span>
-                </p>
-                <ul className="mt-6 space-y-3 border-t border-slate-800 pt-6 text-sm text-slate-300">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex gap-2">
-                      <Check size={16} className="mt-0.5 shrink-0 text-cyan-300" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={plan.name === "Free" ? "/login?mode=signup" : "/planos"}
-                  className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                    plan.featured
-                      ? "bg-cyan-400 text-slate-950 hover:bg-cyan-300"
-                      : "border border-slate-700 text-slate-200 hover:border-cyan-400/40 hover:text-cyan-200"
+            {plans.map((plan) => {
+              const isFree = plan.id === "free";
+              return (
+                <article
+                  key={plan.id}
+                  className={`relative flex flex-col rounded-2xl border p-6 ${
+                    plan.featured ? "border-cyan-400/50 bg-cyan-400/[0.08]" : "border-slate-800 bg-slate-900/50"
                   }`}
                 >
-                  {plan.name === "Free" ? "Começar grátis" : `Escolher ${plan.name}`}
-                  <ArrowRight size={16} />
-                </Link>
-              </article>
-            ))}
+                  {plan.featured ? (
+                    <span className="absolute right-5 top-5 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-200">
+                      Mais escolhido
+                    </span>
+                  ) : null}
+                  <h3 className="text-xl font-semibold text-white">{plan.name}</h3>
+                  <p className="mt-5 text-4xl font-semibold text-white">
+                    {formatEuros(plan.priceMonthly)}
+                    <span className="ml-1 text-sm font-normal text-slate-500">{isFree ? "para começar" : "/ mês"}</span>
+                  </p>
+                  <ul className="mt-6 space-y-3 border-t border-slate-800 pt-6 text-sm text-slate-300">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex gap-2">
+                        <Check size={16} className="mt-0.5 shrink-0 text-cyan-300" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={isFree ? "/login?mode=signup" : "/planos"}
+                    className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                      plan.featured
+                        ? "bg-cyan-400 text-slate-950 hover:bg-cyan-300"
+                        : "border border-slate-700 text-slate-200 hover:border-cyan-400/40 hover:text-cyan-200"
+                    }`}
+                  >
+                    {isFree ? "Começar grátis" : `Escolher ${plan.name}`}
+                    <ArrowRight size={16} />
+                  </Link>
+                </article>
+              );
+            })}
           </div>
           <p className="mt-6 text-xs text-slate-600">Preços sem IVA. Checkout seguro processado pela Stripe.</p>
         </div>
