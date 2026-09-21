@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
+export { checkSuppressed } from "./suppression";
+
 export type CommissionKind =
   | "direct_first"
   | "direct_follow"
