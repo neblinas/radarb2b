@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BellRing, BookOpen, BriefcaseBusiness, Building2, ClipboardList, Coins, Inbox, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, Search, Settings2, UserPlus, Users, X, Zap } from "lucide-react";
+import { BarChart3, BellRing, BookOpen, BriefcaseBusiness, Building2, ClipboardList, Coins, Inbox, LayoutDashboard, LifeBuoy, LogOut, Mail, Menu, Search, Settings2, Target, UserPlus, Users, Wand2, X, Zap } from "lucide-react";
 import { ReactNode, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import { supabase } from "@/lib/supabase";
@@ -20,7 +20,10 @@ export const backofficeNav = [
   { label: "Oportunidades", href: "/backoffice/oportunidades", icon: Building2 },
     { label: "Leads comerciais", href: "/backoffice/leads", icon: BriefcaseBusiness },
   { label: "Pesquisar empresas", href: "/backoffice/prospeccao", icon: Search },
-    { label: "Dashboard de prospeção", href: "/backoffice/prospeccao/dashboard", icon: BarChart3 },
+                { label: "Dashboard de prospeção", href: "/backoffice/prospeccao/dashboard", icon: BarChart3 },
+    { label: "Gestão de prospeção", href: "/backoffice/prospeccao/gestao", icon: BriefcaseBusiness },
+    { label: "Enriquecimento de empresas", href: "/backoffice/prospeccao/enriquecimento", icon: Wand2 },
+    { label: "Lead Scoring", href: "/backoffice/prospeccao/scoring", icon: Target },
     { label: "Autopilot", href: "/backoffice/autopilot", icon: Zap },
     { label: "Caixa de entrada", href: "/backoffice/inbox", icon: Inbox },
     { label: "Manual do Autopilot", href: "/backoffice/autopilot/manual", icon: BookOpen },

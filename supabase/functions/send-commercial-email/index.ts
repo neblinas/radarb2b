@@ -83,6 +83,23 @@ serve(async (request) => {
     if (body.length < 5) throw new Error("Mensagem demasiado curta");
     if (cc && !EMAIL_RE.test(cc)) throw new Error("CC inválido");
 
+    // Compliance: NUNCA enviar para contactos em suppression (opt-out,
+    // unsubscribe, bounce, complaint). A organização é resolvida pela SESSÃO no
+    // servidor (is_suppressed_session) — o cliente não a fornece. Em erro, falha
+    // em segurança (bloqueia o envio).
+    const domain = to.slice(to.lastIndexOf("@") + 1).toLowerCase();
+    const { data: suppressed, error: suppressionError } = await userClient.rpc("is_suppressed_session", {
+      p_email: to,
+      p_domain: domain,
+      p_company_id: companyId,
+    });
+    if (suppressionError) {
+      throw new Error("Não foi possível confirmar a listagem de exclusão. Tenta novamente.");
+    }
+    if (suppressed === true) {
+      throw new Error("Este contacto está em opt-out/exclusão e não pode receber comunicações comerciais.");
+    }
+
     // Identidade de envio (assinatura) — cria se não existir.
     const { data: senderData, error: senderError } = await userClient.rpc("commercial_ensure_sender");
     if (senderError || !senderData) throw senderError || new Error("Could not resolve sender");

@@ -210,6 +210,12 @@ Configurar os webhooks no painel Resend:
 - **Suppression:** antes de enviar, `is_suppressed(org, email, domain, company)`.
   Motivos: `unsubscribe`, `do_not_contact`, `bounce`, `complaint`, `manual`,
   `compliance`. Gestão em `automation_suppress(...)`.
+- **Envio comercial humano:** o frontend usa `is_suppressed_session(email,
+  domain, company)` (migração `20261003090000_suppression_session.sql`), que
+  resolve a organização pela SESSÃO (`crm_organization_id()`) e valida role CRM
+  no backend — o cliente nunca fornece o id da organização. Falha em segurança
+  (em erro, assume suprimido). O worker automático continua a usar
+  `is_suppressed` diretamente com o id resolvido pelo service role.
 - **Unsubscribe:** cada mensagem de outbound inclui link de cancelamento
   (`email-unsubscribe`, com token). Unsubscribe → suppression + estado
   `unsubscribed` + para a sequência. Suporta one-click (RFC 8058 via POST).
@@ -255,6 +261,8 @@ com a mensagem de outreach (o `inbound-email` extrai o token e liga ao prospect)
 | `20260924095000_customer_lifecycle.sql` | F5 — ciclo de vida de clientes |
 | `20260924096000_autopilot_control_center.sql` | F6 — painel de controlo/atividade |
 | `20260924097000_outreach_approval_queue.sql` | F7 — fila de aprovação humana |
+| `20261003090000_suppression_session.sql` | Compliance — suppression segura por sessão |
+| `20261004090000_suppression_session_hardening.sql` | Compliance — restringe RPC a autenticados |
 
 > **Ativação em staging:** ver `STAGING_AUTOPILOT.md` (migrações → segredos →
 > webhooks → cron → checklist de validação → rollback).

@@ -22,6 +22,7 @@ import {
   EmailDetail,
   MailSender,
   SentEmail,
+  checkSuppressed,
   emailStatusLabel,
   fetchEmailDetail,
   fetchMySender,
@@ -71,6 +72,7 @@ function CommercialEmailContent() {
   });
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState("");
+  const [suppressionNotice, setSuppressionNotice] = useState("");
 
   // Assinatura
   const [sig, setSig] = useState({ displayName: "", replyTo: "", signatureNote: "" });
@@ -157,6 +159,7 @@ function CommercialEmailContent() {
     event.preventDefault();
     setSendMsg("");
     setError("");
+    setSuppressionNotice("");
     if (!EMAIL_RE.test(form.to.trim())) {
       setSendMsg("Indica um destinatário válido.");
       return;
@@ -167,8 +170,20 @@ function CommercialEmailContent() {
     }
     setSending(true);
     try {
+      const to = form.to.trim();
+      // Compliance: bloquear envio para contactos com opt-out/exclusão antes de
+      // tentar enviar. A verificação é autoritativa no backend; aqui é um aviso
+      // claro ao utilizador. Em erro, falha em segurança (não envia).
+      const blocked = await checkSuppressed({ email: to });
+      if (blocked) {
+        setSuppressionNotice(
+          "Este contacto está em opt-out/exclusão e não pode receber comunicações comerciais. O envio foi bloqueado.",
+        );
+        setSending(false);
+        return;
+      }
       await sendCommercialEmail({
-        to: form.to.trim(),
+        to,
         cc: form.cc.trim() || undefined,
         subject: form.subject.trim(),
         body: form.body.trim(),
@@ -336,6 +351,11 @@ function CommercialEmailContent() {
             </div>
 
             {sendMsg ? <p className="mt-4 text-sm text-cyan-200">{sendMsg}</p> : null}
+            {suppressionNotice ? (
+              <p className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/5 p-3 text-sm text-rose-200">
+                {suppressionNotice}
+              </p>
+            ) : null}
 
             <button
               type="submit"

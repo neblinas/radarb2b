@@ -14,6 +14,11 @@ export type { SuppressionReason };
 /**
  * Verifica no servidor se um contacto está suprimido. Falha em segurança:
  * se a verificação falhar, devolve `true` (não enviar).
+ *
+ * Usa `is_suppressed_session`, que resolve a organização pela SESSÃO no
+ * servidor (`crm_organization_id()`). O cliente NUNCA envia o id da
+ * organização — evita forjar contexto e garante que a verificação consulta a
+ * suppression list correta. A RPC valida role CRM e falha em segurança.
  */
 export async function checkSuppressed(params: {
   email?: string;
@@ -21,8 +26,7 @@ export async function checkSuppressed(params: {
   companyId?: string;
 }): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc("is_suppressed", {
-      p_organization_id: null, // resolvido no servidor pela sessão seria ideal; ver nota em AUTOPILOT.md
+    const { data, error } = await supabase.rpc("is_suppressed_session", {
       p_email: params.email ?? null,
       p_domain: params.domain ?? (params.email ? emailDomain(params.email) : null),
       p_company_id: params.companyId ?? null,
@@ -33,4 +37,3 @@ export async function checkSuppressed(params: {
     return true; // fail-safe: sem certeza, não enviar
   }
 }
-
