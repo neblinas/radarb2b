@@ -90,8 +90,10 @@ export default function ContaPage() {
         return;
       }
 
-      // Registo de atividade (last_seen) — não bloqueia o carregamento da conta.
-      void touchActivity();
+            // Registo de atividade (last_seen) — não bloqueia o carregamento da conta.
+      void touchActivity().catch(() => {
+        // Falha de telemetria de atividade nunca deve afetar o utilizador.
+      });
 
       const [
         profileResult,
