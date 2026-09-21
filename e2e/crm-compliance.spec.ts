@@ -7,7 +7,7 @@ test("o centro de ajuda responde sobre planos e preços", async ({ page }) => {
   await page.getByRole("button", { name: "Obter resposta" }).click();
 
   await expect(page.getByRole("paragraph").filter({ hasText: "Planos e preços" })).toBeVisible();
-  await expect(page.getByText(/Free, sem custo.*Starter, 19.*Pro, 39/)).toBeVisible();
+  await expect(page.getByText(/Free, sem custo.*Starter, 29.*Pro, 69/)).toBeVisible();
 });
 
 test("o centro de ajuda apresenta o ticket e FAQ", async ({ page }) => {
