@@ -61,6 +61,7 @@ function PesquisaContent() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [usageError, setUsageError] = useState("");
+  const [usageLimitReached, setUsageLimitReached] = useState(false);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [creatingAlert, setCreatingAlert] = useState(false);
@@ -91,6 +92,7 @@ function PesquisaContent() {
     setPage(1);
     setSearched(false);
     setUsageError("");
+    setUsageLimitReached(false);
     setSavedSearchMessage("");
     setAlertMessage("");
   };
@@ -131,9 +133,10 @@ useEffect(() => {
     }
 
     const timer = setTimeout(async () => {
-      setLoading(true);
+            setLoading(true);
       setSearched(true);
       setUsageError("");
+      setUsageLimitReached(false);
 
       const searchKey = JSON.stringify({
         query: term,
@@ -163,8 +166,10 @@ useEffect(() => {
         const { data: allowed, error: usageRpcError } =
           await supabase.rpc("increment_search_usage");
 
-        if (usageRpcError || allowed !== true) {
+                if (usageRpcError || allowed !== true) {
           lastCountedSearch.current = "";
+
+          setUsageLimitReached(!usageRpcError && allowed !== true);
 
           setUsageError(
             usageRpcError
@@ -613,13 +618,20 @@ useEffect(() => {
 
           {hasActiveFilters && usageError ? (
             <div className="mt-4 rounded-xl border border-amber-900/50 bg-amber-950/20 px-4 py-3 text-sm text-amber-300">
-              {usageError}
+                            {usageError}
               {!sessionEmail ? (
                 <Link
                   href={`/login?next=${encodeURIComponent(`/pesquisa?${new URLSearchParams({ query, procedureType, dateFrom, dateTo, valueFrom, valueTo }).toString()}`)}`}
                   className="mt-3 inline-flex items-center rounded-lg bg-cyan-400 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-300"
                 >
                   Desbloquear pesquisa gratuita
+                </Link>
+              ) : usageLimitReached ? (
+                <Link
+                  href="/planos"
+                  className="mt-3 inline-flex items-center rounded-lg bg-cyan-400 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-300"
+                >
+                  Ver planos
                 </Link>
               ) : null}
             </div>

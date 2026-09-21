@@ -5,9 +5,10 @@ import { FormEvent, useMemo, useState } from "react";
 import { ArrowRight, Bot, CheckCircle2, ChevronRight, CircleHelp, LifeBuoy, Send, ShieldCheck } from "lucide-react";
 import PublicPage from "@/components/PublicPage";
 import { supabase } from "@/lib/supabase";
+import { planSummarySentence } from "@/lib/plans";
 
 const knowledge = [
-  { terms: ["preco", "quanto custa", "custo", "planos", "free", "starter", "pro", "qualo preco"], title: "Planos e preços", answer: "O Adjudata tem três planos: Free, sem custo para começar; Starter, 19 € por mês, com 200 pesquisas, 100 oportunidades, 25 pesquisas guardadas e 5 alertas; e Pro, 39 € por mês, com pesquisas ilimitadas, 500 oportunidades, 100 pesquisas guardadas e 20 alertas. Os impostos aplicáveis podem ser adicionados no pagamento. Começa no Free e escolhe um plano pago quando precisares de mais capacidade." },
+  { terms: ["preco", "quanto custa", "custo", "planos", "free", "starter", "pro", "qualo preco"], title: "Planos e preços", answer: `O Adjudata tem três planos: ${planSummarySentence()}. Os impostos aplicáveis podem ser adicionados no pagamento. Começa no Free e escolhe um plano pago quando precisares de mais capacidade.` },
   { terms: ["o que e", "o que faz", "radar", "plataforma", "servico", "negocio"], title: "O que é o Adjudata?", answer: "É uma plataforma de inteligência comercial para contratação pública portuguesa. Ajuda empresas a descobrir procedimentos relevantes, perceber quem compra, acompanhar concorrência e organizar oportunidades num único espaço de trabalho." },
   { terms: ["vantagem", "beneficio", "vale a pena", "ajuda empresa", "ganhar", "vender"], title: "Que vantagem oferece a uma empresa?", answer: "Reduz o tempo de pesquisa, ajuda a encontrar oportunidades antes de se perderem, dá contexto sobre entidades e concorrência e organiza o seguimento comercial. O valor está em transformar dados públicos dispersos numa rotina comercial mais focada." },
   { terms: ["dados", "fonte", "base", "portal", "publico"], title: "De onde vêm os dados?", answer: "A fonte principal é o Portal BASE. O Adjudata organiza informação pública; não revela dados privados nem desbloqueia informação reservada. Confirma sempre o procedimento e os documentos na fonte oficial." },

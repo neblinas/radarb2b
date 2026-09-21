@@ -5,54 +5,17 @@ import { ArrowRight, BellRing, Check, Loader2, SearchCheck, ShieldCheck, Users }
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { formatEuros, plans, type PaidPlanId } from "@/lib/plans";
 
 type Billing = "monthly" | "annual";
-type PaidPlan = "starter" | "pro";
-
-const plans = [
-  {
-    id: "free",
-    name: "Free",
-    priceMonthly: 0,
-    priceAnnual: 0,
-    annualDiscount: 0,
-    description: "Para conhecer o Adjudata e testar uma rotina de pesquisa.",
-    features: ["50 pesquisas por mês", "10 oportunidades guardadas", "5 pesquisas guardadas", "1 alerta"],
-    featured: false,
-  },
-  {
-    id: "starter",
-    name: "Starter",
-    priceMonthly: 19,
-    priceAnnual: 205,
-    annualDiscount: 10,
-    description: "Para empresas pequenas que precisam de acompanhar oportunidades com consistência.",
-    features: ["200 pesquisas por mês", "100 oportunidades", "25 pesquisas guardadas", "5 alertas", "Acesso a entidades e concorrência"],
-    featured: true,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    priceMonthly: 39,
-    priceAnnual: 398,
-    annualDiscount: 15,
-    description: "Para equipas comerciais que transformam contratação pública numa rotina de crescimento.",
-    features: ["Pesquisas ilimitadas", "500 oportunidades", "100 pesquisas guardadas", "20 alertas", "Contexto completo de procedimentos"],
-    featured: false,
-  },
-] as const;
-
-function formatEuros(value: number) {
-  return `${value.toLocaleString("pt-PT", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} €`;
-}
 
 export default function PlansPage() {
   const router = useRouter();
   const [billing, setBilling] = useState<Billing>("monthly");
-  const [processing, setProcessing] = useState<PaidPlan | null>(null);
+  const [processing, setProcessing] = useState<PaidPlanId | null>(null);
   const [error, setError] = useState("");
 
-  async function selectPlan(planId: PaidPlan) {
+  async function selectPlan(planId: PaidPlanId) {
     setProcessing(planId);
     setError("");
     const { data: { session } } = await supabase.auth.getSession();
@@ -95,7 +58,7 @@ export default function PlansPage() {
             aria-pressed={billing === "annual"}
             className={`rounded-lg px-4 py-2 font-medium transition ${billing === "annual" ? "bg-cyan-400 text-slate-950" : "text-slate-400 hover:text-white"}`}
           >
-            Anual <span className={billing === "annual" ? "text-slate-900" : "text-cyan-300"}>− até 15%</span>
+            Anual <span className={billing === "annual" ? "text-slate-900" : "text-cyan-300"}>− até {Math.max(...plans.map((plan) => plan.annualDiscount))}%</span>
           </button>
         </div>
 
@@ -130,7 +93,7 @@ export default function PlansPage() {
                 )}
 
                 <p className="mt-4 min-h-14 text-sm leading-6 text-slate-400">{plan.description}</p>
-                <ul className="mt-6 space-y-3 border-t border-slate-800 pt-6 text-sm text-slate-300">
+                                <ul className="mt-6 space-y-3 border-t border-slate-800 pt-6 text-sm text-slate-300">
                   {plan.features.map((feature) => <li key={feature} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-cyan-300" />{feature}</li>)}
                 </ul>
 
@@ -139,7 +102,7 @@ export default function PlansPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => selectPlan(plan.id)}
+                    onClick={() => selectPlan(plan.id as PaidPlanId)}
                     disabled={processing !== null}
                     className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${plan.featured ? "bg-cyan-400 text-slate-950 hover:bg-cyan-300" : "border border-slate-700 text-slate-200 hover:border-cyan-400/40 hover:text-cyan-200"}`}
                   >

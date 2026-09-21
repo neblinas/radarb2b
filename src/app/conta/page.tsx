@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { touchActivity } from "@/lib/autopilotDashboard";
 import { trackPurchaseConversion } from "@/lib/googleAds";
+import { formatEuros, getPlan } from "@/lib/plans";
 
 type AccountData = {
   email: string;
@@ -311,6 +312,18 @@ export default function ContaPage() {
       account?.currentPeriodEnd ?? null,
     );
 
+  // Planos pagos para o upsell do Free — derivados da fonte única.
+  const starterPlan = getPlan("starter");
+  const proPlan = getPlan("pro");
+  const upsellLimitItems = (plan: typeof starterPlan) => [
+    plan.maxSearchesMonth === null
+      ? "Pesquisas ilimitadas"
+      : `${plan.maxSearchesMonth} pesquisas por mês`,
+    `${plan.maxSavedOpportunities} oportunidades guardadas`,
+    `${plan.maxSavedSearches} pesquisas guardadas`,
+    `${plan.maxAlerts} alertas automáticos`,
+  ];
+
   return (
     <main className="min-h-screen text-slate-100">
       <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
@@ -533,12 +546,12 @@ export default function ContaPage() {
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/55 p-6 shadow-sm">
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Starter
+                  {starterPlan.name}
                 </p>
 
                 <div className="mt-4 flex items-end gap-2">
                   <span className="text-4xl font-bold text-white">
-                    19 €
+                    {formatEuros(starterPlan.priceMonthly)}
                   </span>
 
                   <span className="pb-1 text-sm text-slate-500">
@@ -552,10 +565,9 @@ export default function ContaPage() {
                  </p>
 
                 <ul className="mt-6 space-y-3 text-sm text-slate-400">
-                  <li>200 pesquisas por mês</li>
-                  <li>100 oportunidades guardadas</li>
-                  <li>25 pesquisas guardadas</li>
-                  <li>5 alertas automáticos</li>
+                  {upsellLimitItems(starterPlan).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
                 </ul>
 
                 <Link
@@ -572,12 +584,12 @@ export default function ContaPage() {
                 </div>
 
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-cyan-300">
-                  Pro
+                  {proPlan.name}
                 </p>
 
                 <div className="mt-4 flex items-end gap-2">
                   <span className="text-4xl font-bold text-white">
-                    39 €
+                    {formatEuros(proPlan.priceMonthly)}
                   </span>
 
                   <span className="pb-1 text-sm text-slate-500">
@@ -591,10 +603,9 @@ export default function ContaPage() {
                  </p>
 
                 <ul className="mt-6 space-y-3 text-sm text-slate-400">
-                  <li>Pesquisas ilimitadas</li>
-                  <li>500 oportunidades guardadas</li>
-                  <li>100 pesquisas guardadas</li>
-                  <li>20 alertas automáticos</li>
+                  {upsellLimitItems(proPlan).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
                 </ul>
 
                 <Link
