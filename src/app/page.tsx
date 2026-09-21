@@ -62,9 +62,27 @@ const audience = [
 ];
 
 const plans = [
-  { name: "Free", price: "0 €", suffix: "para começar", features: ["50 pesquisas por mês", "10 oportunidades guardadas", "1 alerta"], featured: false },
-  { name: "Starter", price: "19 €", suffix: "/ mês", features: ["200 pesquisas por mês", "100 oportunidades", "Acesso a entidades e concorrência"], featured: true },
-  { name: "Pro", price: "39 €", suffix: "/ mês", features: ["Pesquisas ilimitadas", "500 oportunidades", "Contexto completo de procedimentos"], featured: false },
+  {
+    name: "Free",
+    price: "0 €",
+    suffix: "para começar",
+    features: ["50 pesquisas por mês", "10 oportunidades guardadas", "5 pesquisas guardadas", "1 alerta"],
+    featured: false,
+  },
+  {
+    name: "Starter",
+    price: "19 €",
+    suffix: "/ mês",
+    features: ["200 pesquisas por mês", "100 oportunidades guardadas", "25 pesquisas guardadas", "5 alertas", "Acesso a entidades e concorrência"],
+    featured: true,
+  },
+  {
+    name: "Pro",
+    price: "39 €",
+    suffix: "/ mês",
+    features: ["Pesquisas ilimitadas", "500 oportunidades guardadas", "100 pesquisas guardadas", "20 alertas", "Contexto completo de procedimentos"],
+    featured: false,
+  },
 ];
 
 const trust = [
