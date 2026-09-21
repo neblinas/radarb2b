@@ -22,7 +22,9 @@
 
 -- ---------------------------------------------------------------------------
 -- 1. Novos valores canónicos de preços e limites (fonte única de verdade).
---    `max_searches_month = -1` representa pesquisas ilimitadas (Pro).
+--    `max_searches_month = NULL` representa pesquisas ilimitadas (Pro) — é a
+--    convenção usada pelas RPCs de quota (`IF v_limit IS NOT NULL AND ...`).
+--    A constraint `plans_searches_check` exige `>= 0` ou NULL.
 -- ---------------------------------------------------------------------------
 update public.plans
 set
@@ -48,11 +50,11 @@ where id = 'starter';
 
 update public.plans
 set
-  name = 'Pro',
+    name = 'Pro',
   price_monthly = 69,
   price_annual = 690,
-  -- -1 = pesquisas ilimitadas
-  max_searches_month = -1,
+  -- NULL = pesquisas ilimitadas (convenção das RPCs de quota)
+  max_searches_month = null,
   max_saved_opportunities = 500,
   max_saved_searches = 100,
   max_alerts = 20
@@ -114,9 +116,10 @@ as $$
       'free'
     ) as id
   )
-  select
+    select
     plan.id,
-    coalesce(plan.max_searches_month, 10),
+    -- null = pesquisas ilimitadas (preserva a semântica das RPCs de quota)
+    plan.max_searches_month,
     coalesce(plan.max_saved_opportunities, 3),
     coalesce(plan.max_saved_searches, 1),
     coalesce(plan.max_alerts, 1)
