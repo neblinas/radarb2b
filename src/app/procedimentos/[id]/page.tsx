@@ -9,6 +9,7 @@ import {
   Landmark,
   MapPin,
   Package,
+  Swords,
   Tag,
   Trophy,
   Users,
@@ -238,6 +239,40 @@ export default async function ProcedurePage({ params }: PageProps) {
     }))
     .filter((item) => item.company);
 
+  // Concorrência neste procedimento: adjudicatários primeiro, depois os
+  // restantes participantes. Construído apenas com dados já carregados acima.
+  const winnerCompanyIds = new Set(awards.map((award) => award.company_id));
+
+  const procedureCompetitors = Array.from(
+    new Map(
+      [
+        ...participants.map((participant) => ({
+          companyId: participant.company_id,
+          role: participant.participant_type || "Participante",
+          won: winnerCompanyIds.has(participant.company_id),
+        })),
+        ...awards.map((award) => ({
+          companyId: award.company_id,
+          role: "Adjudicatário",
+          won: true,
+        })),
+      ].map((item) => [item.companyId, item]),
+    ).values(),
+  )
+    .map((item) => ({
+      ...item,
+      company: companyMap.get(item.companyId),
+    }))
+    .filter((item) => item.company)
+    .sort((a, b) => {
+      if (a.won !== b.won) return a.won ? -1 : 1;
+      return (a.company?.name || "").localeCompare(b.company?.name || "");
+    });
+
+  const firstContractWithDocument = contracts.find(
+    (contract) => contract.document_url,
+  );
+
   return (
     <main className="min-h-screen bg-[#06101f] text-slate-100">
       <ProcedureAccessGate>
@@ -302,6 +337,16 @@ export default async function ProcedurePage({ params }: PageProps) {
                       Abrir concurso no BASE
                       <ExternalLink size={13} />
                     </a>
+                  ) : firstContractWithDocument?.document_url ? (
+                    <a
+                      href={firstContractWithDocument.document_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 font-medium text-cyan-400 hover:text-cyan-300"
+                    >
+                      Abrir anúncio no portal oficial
+                      <ExternalLink size={13} />
+                    </a>
                   ) : null}
                 </div>
 
@@ -361,6 +406,7 @@ export default async function ProcedurePage({ params }: PageProps) {
                   ["#visao-geral", "Visão geral"],
                   ["#adjudicatarios", "Adjudicatários"],
                   ["#participantes", "Participantes"],
+                  ["#concorrencia", "Concorrência"],
                   ["#contratos", "Contratos"],
                   ["#cpvs", "CPVs"],
                 ].map(([href, label]) => (
@@ -522,6 +568,84 @@ export default async function ProcedurePage({ params }: PageProps) {
               ) : (
                 <div className="rounded-3xl border border-slate-800 bg-[#081525] p-6 text-sm text-slate-500">
                   Não existem participantes identificados.
+                </div>
+              )}
+            </section>
+
+            <section
+              id="concorrencia"
+              className="scroll-mt-24 space-y-3"
+            >
+              <div className="flex items-center gap-3 px-1">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-400">
+                  <Swords size={18} />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-white">
+                    Concorrência neste procedimento
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Empresas presentes, com adjudicatários destacados
+                  </p>
+                </div>
+              </div>
+
+              {procedureCompetitors.length ? (
+                <>
+                  <div className="overflow-hidden rounded-3xl border border-slate-800 bg-[#081525]">
+                    {procedureCompetitors.map((competitor, index) => (
+                      <div
+                        key={competitor.companyId}
+                        className="flex flex-col gap-3 border-b border-slate-800 p-5 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+                      >
+                        <div className="flex min-w-0 items-center gap-4">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-500/10 text-sm font-semibold text-cyan-300">
+                            {index + 1}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-white">
+                              {competitor.company?.name ||
+                                "Empresa não identificada"}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              NIF {competitor.company?.nif || "—"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          {competitor.won ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-300">
+                              <Trophy size={12} />
+                              Adjudicatário
+                            </span>
+                          ) : (
+                            <span className="rounded-full border border-slate-700 px-3 py-1 text-[11px] text-slate-400">
+                              {competitor.role}
+                            </span>
+                          )}
+
+                          <Link
+                            href={`/concorrencia?company=${competitor.companyId}`}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-[11px] font-medium text-cyan-300 transition hover:bg-cyan-500/15"
+                          >
+                            Ver concorrência
+                            <ExternalLink size={11} />
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="px-1 text-xs text-slate-600">
+                    A análise detalhada de concorrência está disponível nos
+                    planos Starter e Pro.
+                  </p>
+                </>
+              ) : (
+                <div className="rounded-3xl border border-slate-800 bg-[#081525] p-6 text-sm text-slate-500">
+                  Não existem concorrentes identificados neste procedimento.
                 </div>
               )}
             </section>
