@@ -176,7 +176,7 @@ async function processClient(
         const resend = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${options.resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ from: SENDER_FROM, to: [to], subject: "O seu resumo de valor no Radar B2B", html }),
+          body: JSON.stringify({ from: SENDER_FROM, to: [to], subject: "O seu resumo de valor na Adjudata", html }),
         });
         await admin.from("value_reports").update({ status: resend.ok ? "sent" : "failed", sent_at: resend.ok ? new Date().toISOString() : null }).eq("id", report.id);
       }
@@ -189,7 +189,7 @@ async function processClient(
 }
 
 function buildValueReport(signals: { searches30d: number }, reason: string): string {
-  return `Resumo do seu Radar B2B\n\n` +
+  return `Resumo do valor da Adjudata\n\n` +
     `Nas últimas semanas registou ${signals.searches30d} pesquisas na plataforma.\n` +
     `Motivo deste contacto: ${reason}.\n\n` +
     `Se precisar de ajuda a tirar mais partido dos dados, responda a este email.`;
