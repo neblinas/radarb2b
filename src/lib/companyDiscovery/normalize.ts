@@ -18,6 +18,8 @@ import type {
   ExternalCompanySize,
   ExternalDiscoveryBucket,
   ExternalDiscoveryCounters,
+  ExternalEmailClassification,
+  ExternalEmailType,
   ExternalRecordEvaluation,
 } from "./types";
 import { EXTERNAL_DISCOVERY_LIMITS } from "./types";
@@ -155,6 +157,120 @@ export function normalizeExternalWebsite(value: string | null | undefined): stri
 }
 
 /**
+ * Normaliza um email de um registo externo. NUNCA inventa nem corrige o email;
+ * apenas valida o formato e devolve a forma canónica em minúsculas. Devolve
+ * `null` quando o valor não é um email plausível.
+ */
+export function normalizeEmail(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return null;
+  // Validação conservadora: algo@dominio.tld, sem espaços. Não tenta corrigir.
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return null;
+  return trimmed;
+}
+
+// Prefixos de caixa institucional/genérica de empresa. Comparados com o local-part
+// normalizado (só letras). Inclui variantes comuns em PT e EN.
+const GENERIC_EMAIL_LOCALPARTS = new Set([
+  "geral",
+  "info",
+  "informacao",
+  "informacoes",
+  "contacto",
+  "contactos",
+  "contact",
+  "comercial",
+  "vendas",
+  "sales",
+  "marketing",
+  "suporte",
+  "support",
+  "ajuda",
+  "help",
+  "admin",
+  "administracao",
+  "rh",
+  "recrutamento",
+  "gerencia",
+  "direcao",
+  "escritorio",
+  "geralpt",
+  "geral2",
+  "empresa",
+  "office",
+  "hello",
+  "mail",
+  "email",
+  "atendimento",
+]);
+
+/**
+ * Classifica a natureza de um email (genérico de empresa vs. pessoa nomeada).
+ * Heurística DETERMINÍSTICA e transparente, baseada apenas no local-part:
+ *   * caixas institucionais conhecidas → `GENERIC_BUSINESS`;
+ *   * padrão `nome.sobrenome`/`nome_sobrenome`/`nome-sobrenome` (dois tokens
+ *     alfabéticos ≥2 letras) → `NAMED_PERSON`;
+ *   * restante → `UNKNOWN` (não assumimos, e por omissão no import exclui-se).
+ * Não faz lookups externos nem IA: o mesmo email classifica-se sempre igual.
+ */
+export function classifyEmail(value: string | null | undefined): ExternalEmailClassification {
+  const email = normalizeEmail(value);
+  if (!email) return "UNKNOWN";
+  const localPart = email.slice(0, email.lastIndexOf("@"));
+  const compact = localPart.replace(/[^a-z0-9]/g, "");
+  // Caixa institucional conhecida (ex.: geral@, comercial@, geral.pt@).
+  if (GENERIC_EMAIL_LOCALPARTS.has(localPart) || GENERIC_EMAIL_LOCALPARTS.has(compact)) {
+    return "GENERIC_BUSINESS";
+  }
+  // Padrão nome.sobrenome (dois tokens alfabéticos com ≥2 letras cada).
+  const tokens = localPart.split(/[._-]+/).filter(Boolean);
+  if (tokens.length >= 2 && tokens.every((token) => /^[a-z]{2,}$/.test(token))) {
+    return "NAMED_PERSON";
+  }
+  return "UNKNOWN";
+}
+
+/** Deriva o `email_type` (alinhado com `prospect_companies.email_type`). */
+export function inferEmailType(value: string | null | undefined): ExternalEmailType {
+  const email = normalizeEmail(value);
+  if (!email) return "outro";
+  const localPart = email.slice(0, email.lastIndexOf("@"));
+  const compact = localPart.replace(/[^a-z0-9]/g, "");
+  if (
+    localPart === "comercial" ||
+    localPart === "vendas" ||
+    compact.startsWith("comercial") ||
+    compact.startsWith("vendas") ||
+    compact.startsWith("sales")
+  ) {
+    return "comercial";
+  }
+  if (
+    localPart === "suporte" ||
+    localPart === "support" ||
+    compact.startsWith("suporte") ||
+    compact.startsWith("support") ||
+    compact.startsWith("ajuda") ||
+    compact.startsWith("help")
+  ) {
+    return "suporte";
+  }
+  if (
+    localPart === "geral" ||
+    localPart === "info" ||
+    localPart === "contacto" ||
+    localPart === "contactos" ||
+    compact.startsWith("geral") ||
+    compact.startsWith("info") ||
+    compact.startsWith("contact")
+  ) {
+    return "geral";
+  }
+  return "outro";
+}
+
+/**
  * Normaliza um registo externo bruto. Devolve `null` quando o registo é
  * irrecuperável (sem nome após normalização).
  */
@@ -189,6 +305,7 @@ export function normalizeExternalRecord(
     size: input.size ? normalizeSize(input.size) : null,
     employees,
     website: normalizeExternalWebsite(input.website ?? null),
+    email: normalizeEmail(input.email ?? null),
     source,
     sourceId: (input.sourceId ?? "").toString().trim() || null,
     collectedAt,
@@ -260,6 +377,19 @@ export function evaluateExternalRecord(
   // Deduplicação conservadora (nome + localização) apenas quando não há NIF.
   if (!record.nif && known.knownDedupKeys.has(dedupKey)) {
     return { record, bucket: "duplicate", reason: "Nome + localização já existem na Adjudata", dedupKey };
+  }
+
+  // RGPD (Opção A): no import por ficheiro, só entram emails de caixa genérica de
+  // empresa. Emails que aparentam ser de uma pessoa nomeada (ex.: `joao.silva@`)
+  // são excluídos — não há base adequada para marketing B2B a um titular.
+  // Determinístico e transparente; contabilizado como inválido.
+  if (record.email && classifyEmail(record.email) === "NAMED_PERSON") {
+    return {
+      record,
+      bucket: "invalid",
+      reason: "Email aparenta ser de pessoa nomeada — excluído por omissão (apenas caixas genéricas de empresa)",
+      dedupKey,
+    };
   }
 
   return { record, bucket: "new", reason: "Empresa nova — candidata a prospect", dedupKey };

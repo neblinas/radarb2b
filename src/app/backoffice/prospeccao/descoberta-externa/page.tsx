@@ -232,7 +232,7 @@ export default function ExternalDiscoveryPage() {
             <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-center text-sm text-slate-400 hover:border-cyan-400/40">
               <FileUp size={22} className="text-cyan-300" />
               <span className="mt-2">{fileName || "Selecionar ficheiro CSV/JSON"}</span>
-              <span className="mt-1 text-xs text-slate-600">Colunas aceites: Nome, NIF, CAE, Distrito, Concelho, Localidade, Estado, Dimensão, Trabalhadores…</span>
+              <span className="mt-1 text-xs text-slate-600">Colunas aceites: Nome, NIF, CAE, Distrito, Concelho, Localidade, Estado, Dimensão, Trabalhadores, Contacto/Email…</span>
               <input type="file" accept=".csv,.json,.tsv,text/csv,application/json" className="hidden" onChange={onFileChange} />
             </label>
           ) : (
@@ -300,15 +300,16 @@ export default function ExternalDiscoveryPage() {
               <p className="mt-1 text-xs text-slate-500">Cada registo é classificado de forma transparente: novo, já existente, bloqueado por opt-out ou inválido.</p>
             </div>
             <div className="overflow-x-auto">
-              <div className="min-w-[760px]">
-                <div className="grid grid-cols-[minmax(200px,1.4fr)_120px_130px_120px_1fr] gap-4 border-b border-slate-800 px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  <span>Empresa</span><span>NIF</span><span>CAE</span><span>Localização</span><span>Classificação</span>
+              <div className="min-w-[900px]">
+                <div className="grid grid-cols-[minmax(200px,1.4fr)_120px_120px_180px_120px_1fr] gap-4 border-b border-slate-800 px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  <span>Empresa</span><span>NIF</span><span>CAE</span><span>Contacto</span><span>Localização</span><span>Classificação</span>
                 </div>
                 {evaluations.length ? evaluations.map((evaluation, index) => (
-                  <div key={`${evaluation.dedupKey}-${index}`} className="grid grid-cols-[minmax(200px,1.4fr)_120px_130px_120px_1fr] items-start gap-4 border-b border-slate-800 px-5 py-4 last:border-0">
+                  <div key={`${evaluation.dedupKey}-${index}`} className="grid grid-cols-[minmax(200px,1.4fr)_120px_120px_180px_120px_1fr] items-start gap-4 border-b border-slate-800 px-5 py-4 last:border-0">
                     <span className="truncate font-medium text-white">{evaluation.record.name}</span>
                     <span className="text-sm text-slate-400">{evaluation.record.nif || "—"}</span>
                     <span className="text-sm text-slate-400">{evaluation.record.cae || "—"}</span>
+                    <span className="truncate text-sm text-slate-400">{evaluation.record.email || "—"}</span>
                     <span className="text-sm text-slate-400">{evaluation.record.localidade || evaluation.record.municipality || evaluation.record.district || "—"}</span>
                     <div className="space-y-1.5">
                       <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${bucketClass[evaluation.bucket]}`}>{externalDiscoveryBucketLabel[evaluation.bucket]}</span>

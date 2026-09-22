@@ -18,7 +18,7 @@
 
 import { supabase } from "@/lib/supabase";
 import type { KnownCompanySnapshot } from "./normalize";
-import { emptyKnownCompanySnapshot, normalizeNif } from "./normalize";
+import { emptyKnownCompanySnapshot, inferEmailType, normalizeNif } from "./normalize";
 import type { ExternalDiscoveryRun, ExternalRecordEvaluation } from "./types";
 
 /** Carrega o snapshot de empresas conhecidas (existentes vs. bloqueadas). */
@@ -89,7 +89,15 @@ export async function persistDiscovery(input: {
       localidade: evaluation.record.localidade ?? null,
       estimated_size: evaluation.record.size ?? null,
       website: evaluation.record.website ?? null,
+      // Email fornecido EXPLICITAMENTE pela fonte. Nunca inferido.
+      email: evaluation.record.email ?? null,
+      // Tipo derivado do prefixo (geral/comercial/suporte/outro) para o scoring
+      // reconhecer contacto empresarial genérico. Sem email, não se atribui tipo.
+      email_type: evaluation.record.email ? inferEmailType(evaluation.record.email) : null,
       company_source: evaluation.record.source,
+      // Proveniência honesta: a origem do contacto é o próprio provider que o
+      // forneceu (ficheiro, lista manual ou dados abertos) — nunca inventada.
+      contact_source: evaluation.record.source,
       source_id: evaluation.record.sourceId ?? null,
       activity_description: null,
     })),

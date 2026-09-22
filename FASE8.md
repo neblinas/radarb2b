@@ -27,6 +27,8 @@ A descoberta externa **alimenta** o pipeline; não o substitui nem o contorna.
   contra o que já existe (NIF como identificador lógico; nome+localidade como
   fallback conservador).
 - Exclui empresas com opt-out/suppression.
+- Importa o **email de contacto** quando a fonte o fornece explicitamente (coluna
+  `contacto`/`email`/`correio`), com salvaguardas de RGPD (ver secção 6).
 - Cria prospects **idempotentes** reutilizando `prospect_company_create`
   (deduplicação e opt-out autoritativos no backend).
 - Suporta **dry-run** (pré-visualização) e **execução real**, com contadores e
@@ -84,7 +86,38 @@ A chave conservadora do motor (`name:<nome>|<localidade>`, em minúsculas) segue
 com a deduplicação autoritativa do backend. A autoridade final é sempre o
 `prospect_company_create` no momento da inserção.
 
-## 5. Segurança e permissões
+## 6. Email de contacto e RGPD
+
+O import de ficheiros aceita uma coluna de **contacto/email** fornecida
+explicitamente pelo administrador (aliases: `contacto`, `contactos`, `email`,
+`correio`, `e-mail`). O motor **nunca** inventa, deduz, corrige nem extrai emails
+de HTML.
+
+**Base e salvaguardas (Opção A — decisão de produto, alinhada com o RGPD):**
+
+1. **Minimização/tipologia.** Só entram emails de **caixa genérica de empresa**
+   (ex.: `geral@`, `info@`, `comercial@`). Estes qualificam-se como contacto
+   organizacional no âmbito do **interesse legítimo** (art. 6.º/1/f) para
+   comunicação B2B.
+2. **Exclusão automática de pessoas nomeadas.** Emails que aparentam ser de uma
+   pessoa (padrão `nome.sobrenome@`, ex.: `joao.silva@`) são classificados como
+   `NAMED_PERSON` e **excluídos do import** (bucket `invalid`), com motivo
+   transparente. A classificação (`classifyEmail`) é **determinística**, sem IA
+   nem lookups externos — o mesmo email classifica-se sempre igual.
+3. **Sem dados inventados.** Sem email na fonte, nenhum `email_type` é atribuído.
+4. **Proveniência honesta.** O campo `contact_source` regista o **provider de
+   origem** real (`file_import`, `manual`, `open_data`), nunca um valor genérico.
+5. **Rastreabilidade.** Cada execução é auditada (`crm_audit`); o tipo de email
+   (`geral`/`comercial`/`suporte`/`outro`, derivado por `inferEmailType`) alimenta
+   o scoring como contacto empresarial.
+6. **Opt-out.** Emails de empresas com opt-out/suppression nunca são importados
+   (prioridade no motor e no backend).
+
+> Aplicação da base legal e da DPIA ao processo comercial é responsabilidade do
+> responsável de tratamento; esta fase limita-se a **reduzir o risco** por
+> desenho (só caixas genéricas, sem inferência, com opt-out).
+
+## 7. Segurança e permissões
 
 - Descoberta/persistência restritas a **admin / commercial_manager** (validado no
   backend, não apenas na UI).
@@ -94,9 +127,10 @@ com a deduplicação autoritativa do backend. A autoridade final é sempre o
   organização (`crm_organization_id()`).
 - Cada execução gera entrada em `admin_audit_log` via `crm_audit`.
 
-## 6. Ficheiros
+## 8. Ficheiros
 
 - Migração: `supabase/migrations/20261006090000_external_company_discovery.sql`
+- Migração (email de contacto): `supabase/migrations/20261009090000_external_discovery_contact_email.sql`
 - Contratos de tipos: `src/lib/companyDiscovery/types.ts`
 - Parsing de ficheiros: `src/lib/companyDiscovery/fileParsing.ts`
 - Normalização + dedup (puro): `src/lib/companyDiscovery/normalize.ts`
@@ -107,7 +141,7 @@ com a deduplicação autoritativa do backend. A autoridade final é sempre o
 - Página back-office: `src/app/backoffice/prospeccao/descoberta-externa/page.tsx`
 - Entrada de navegação: `src/components/BackofficeShell.tsx`
 
-## 7. Como executar
+## 9. Como executar
 
 **Back-office:** `/backoffice/prospeccao/descoberta-externa` (admin/gestor
 comercial).
@@ -136,7 +170,7 @@ select public.external_discovery_persist(
 );
 ```
 
-## 8. Resultado com amostra pequena
+## 10. Resultado com amostra pequena
 
 Teste determinístico (`engine.test.ts` → "lote com amostra pequena") sobre 7
 registos:
@@ -153,7 +187,7 @@ registos:
 O motor distingue com precisão duplicados internos, já existentes e opt-out —
 nenhum reentra em campanhas.
 
-## 9. Aplicação (obrigatório)
+## 11. Aplicação (obrigatório)
 
 A migração **tem de ser aplicada** no Supabase antes de usar a página:
 ```powershell
@@ -161,7 +195,7 @@ A migração **tem de ser aplicada** no Supabase antes de usar a página:
 supabase db push
 ```
 
-## 10. Próximos passos (fora desta fase)
+## 12. Próximos passos (fora desta fase)
 
 - Configurar, com endpoint explícito, um provider de dados abertos real.
 - Enriquecimento de websites/emails sobre os novos prospects (FASE 4).
