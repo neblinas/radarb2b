@@ -77,8 +77,9 @@ export default function ProspectDiscoveryPage() {
       });
       setResult(data);
       setHistory(await listProspectDiscoveryRuns(10));
-    } catch (err) {
-      setError(err instanceof Error ? "Não foi possível executar a descoberta. Confirma a migração da FASE 3 e as permissões." : "Erro inesperado.");
+        } catch (err) {
+      const detail = err instanceof Error && err.message ? ` (${err.message})` : "";
+      setError(`Não foi possível executar a descoberta${detail}. Confirma as permissões e a migração da FASE 3.`);
     }
     setRunning(false);
   }
