@@ -36,26 +36,51 @@ function emailDomain(email: string): string {
   return at < 0 ? "" : email.slice(at + 1).toLowerCase().trim();
 }
 
-/** Substituição de variáveis com dados REAIS. Nunca inventa valores. */
+/**
+ * Substituição de variáveis com dados REAIS. Nunca inventa valores.
+ *
+ * Importante: quando NÃO existem dados de contratação para a empresa, os
+ * números (participações/adjudicações/valor) não devem aparecer como "0" ou
+ * "—", porque isso destrói a credibilidade do contacto. Nesses casos:
+ *   - `{activity_facts}` devolve uma frase neutra (sem números);
+ *   - `{participation_12m}`, `{awards}`, `{value}` e `{cpv}` ficam vazios.
+ * Quando há dados, `{activity_facts}` é a frase completa com os números.
+ */
 function personalize(
   template: string,
   facts: Record<string, unknown>,
   companyName: string,
 ): string {
-  const awards = facts["award_count"] != null ? String(facts["award_count"]) : "—";
-  const value = facts["total_award_value"] != null
-    ? Number(facts["total_award_value"]).toLocaleString("pt-PT", { style: "currency", currency: "EUR" })
-    : "—";
-  const cpv = Array.isArray(facts["cpv_codes"]) && facts["cpv_codes"].length
-    ? (facts["cpv_codes"] as string[]).slice(0, 3).join(", ")
-    : "—";
+  const participation = Number(facts["participation_12m"] ?? 0);
+  const awardsNum = facts["award_count"] != null ? Number(facts["award_count"]) : 0;
+  const valueNum = facts["total_award_value"] != null ? Number(facts["total_award_value"]) : 0;
+  const cpvList = Array.isArray(facts["cpv_codes"]) ? (facts["cpv_codes"] as string[]) : [];
+
+  const hasFacts = participation > 0 || awardsNum > 0 || valueNum > 0;
+
+  const awards = hasFacts && facts["award_count"] != null ? String(facts["award_count"]) : "";
+  const value = hasFacts && valueNum > 0
+    ? valueNum.toLocaleString("pt-PT", { style: "currency", currency: "EUR" })
+    : "";
+  const cpv = cpvList.length ? cpvList.slice(0, 3).join(", ") : "";
+
+  // Frase de atividade: com números quando existem; neutra quando não.
+  const activityParts: string[] = [];
+  if (participation > 0) activityParts.push(`${participation} participações nos últimos 12 meses`);
+  if (awardsNum > 0) activityParts.push(`${awardsNum} adjudicações`);
+  if (valueNum > 0) activityParts.push(`${value} em valor adjudicado`);
+  const activityFacts = activityParts.length
+    ? activityParts.join(", ")
+    : "temos vindo a acompanhar a atividade da empresa em contratação pública";
+
   return template
     .replaceAll("{company}", companyName)
-    .replaceAll("{nif}", String(facts["nif"] ?? "—"))
+    .replaceAll("{nif}", String(facts["nif"] ?? ""))
     .replaceAll("{awards}", awards)
     .replaceAll("{value}", value)
     .replaceAll("{cpv}", cpv)
-    .replaceAll("{participation_12m}", String(facts["participation_12m"] ?? "0"));
+    .replaceAll("{participation_12m}", participation > 0 ? String(participation) : "")
+    .replaceAll("{activity_facts}", activityFacts);
 }
 
 function renderHtml(body: string, unsubscribeUrl: string, trackingPixel: string): string {

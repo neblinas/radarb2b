@@ -1,70 +1,82 @@
 # AGENTS.md
 
 ## Projeto
-Adjudata — plataforma SaaS de inteligência sobre contratação pública.
+Adjudata â€” plataforma SaaS de inteligÃªncia sobre contrataÃ§Ã£o pÃºblica.
 
 ## Objetivo
-Este ficheiro define regras obrigatórias para qualquer agente de IA que trabalhe neste repositório.
+Este ficheiro define regras obrigatÃ³rias para qualquer agente de IA que trabalhe neste repositÃ³rio.
 
-## Princípios obrigatórios
-- Priorizar estabilidade, segurança e integridade do produto.
-- Não introduzir soluções temporárias quando existir uma abordagem robusta e simples.
-- Não alterar comportamento funcional já validado sem necessidade clara.
-- Evitar dependências redundantes ou ferramentas que aumentem complexidade sem benefício proporcional.
+## PrincÃ­pios obrigatÃ³rios
+- Priorizar estabilidade, seguranÃ§a e integridade do produto.
+- NÃ£o introduzir soluÃ§Ãµes temporÃ¡rias quando existir uma abordagem robusta e simples.
+- NÃ£o alterar comportamento funcional jÃ¡ validado sem necessidade clara.
+- Evitar dependÃªncias redundantes ou ferramentas que aumentem complexidade sem benefÃ­cio proporcional.
 - Preservar compatibilidade com a arquitetura atual: Next.js, Supabase, Stripe e Vercel.
 - Nunca expor secrets, service role keys, webhook secrets, tokens ou credenciais.
-- Toda alteração relevante deve ser feita através de Issue, branch e Pull Request.
-- Não trabalhar diretamente em main, exceto correções urgentes devidamente justificadas.
-- Cada PR deve referenciar a Issue correspondente através de "Closes #N" ou equivalente.
-- Antes de merge, garantir que build, lint e testes aplicáveis passam.
-- Toda alteração de UI deve preservar acessibilidade, responsividade e desempenho.
-- Animações devem ser subtis, funcionais e respeitar prefers-reduced-motion.
-- Skeletons, loading states e lazy loading devem ser usados apenas quando melhorarem a experiência.
-- Evitar animações decorativas excessivas.
-- Alterações de segurança, autenticação, permissões, RLS, Stripe, quotas e billing exigem validação específica.
-- Back-office/admin deve ter autorização real no backend; nunca depender apenas de esconder rotas ou links.
-- Novas dependências devem ser justificadas por benefício concreto.
-- Ferramentas de observabilidade ou qualidade não devem duplicar funções sem necessidade.
+- Toda alteraÃ§Ã£o relevante deve ser feita atravÃ©s de Issue, branch e Pull Request.
+- NÃ£o trabalhar diretamente em main, exceto correÃ§Ãµes urgentes devidamente justificadas.
+- Cada PR deve referenciar a Issue correspondente atravÃ©s de "Closes #N" ou equivalente.
+- Antes de merge, garantir que build, lint e testes aplicÃ¡veis passam.
+- Toda alteraÃ§Ã£o de UI deve preservar acessibilidade, responsividade e desempenho.
+- AnimaÃ§Ãµes devem ser subtis, funcionais e respeitar prefers-reduced-motion.
+- Skeletons, loading states e lazy loading devem ser usados apenas quando melhorarem a experiÃªncia.
+- Evitar animaÃ§Ãµes decorativas excessivas.
+- AlteraÃ§Ãµes de seguranÃ§a, autenticaÃ§Ã£o, permissÃµes, RLS, Stripe, quotas e billing exigem validaÃ§Ã£o especÃ­fica.
+- Back-office/admin deve ter autorizaÃ§Ã£o real no backend; nunca depender apenas de esconder rotas ou links.
+- Novas dependÃªncias devem ser justificadas por benefÃ­cio concreto.
+- Ferramentas de observabilidade ou qualidade nÃ£o devem duplicar funÃ§Ãµes sem necessidade.
+
+## PÃºblico-alvo: produto 100% autÃ³nomo (regra transversal)
+O Adjudata Ã©, por objetivo de produto, uma plataforma **100% autÃ³noma e self-service**. NÃ£o existe contacto telefÃ³nico nem venda assistida.
+
+ImplicaÃ§Ãµes obrigatÃ³rias em qualquer alteraÃ§Ã£o:
+- Todo o fluxo deve funcionar de ponta a ponta sem intervenÃ§Ã£o humana da nossa parte.
+- Mensagens, UI, emails e copies NÃƒO devem prometer ou sugerir reuniÃµes, demonstraÃ§Ãµes ao vivo, telefonemas, "agendar conversa" ou qualquer contacto assistido.
+- CTAs devem encaminhar para a autonomia do utilizador (ex.: criar conta grÃ¡tis, usar a plataforma), nunca para combinar interaÃ§Ã£o humana.
+- Linguagem deve enquadrar-se em comunicaÃ§Ã£o assÃ­ncrona (ex.: responder a um email), nunca sÃ­ncrona/telefÃ³nica.
+
+ExceÃ§Ã£o Ãºnica e deliberada:
+- A **confirmaÃ§Ã£o/aprovaÃ§Ã£o de envios** do Autopilot (fila `pending_approval`) mantÃ©m-se human-in-the-loop. Ã‰ a Ãºnica parte que exige aÃ§Ã£o humana, por seguranÃ§a, e deve ser preservada.
 
 ## Fluxo de desenvolvimento
 1. Criar ou identificar uma GitHub Issue.
 2. Criar branch dedicada.
-3. Implementar apenas o âmbito da Issue.
-4. Executar build, lint e testes aplicáveis.
+3. Implementar apenas o Ã¢mbito da Issue.
+4. Executar build, lint e testes aplicÃ¡veis.
 5. Criar Pull Request.
 6. Referenciar a Issue no PR com "Closes #N".
-7. Rever regressões e segurança.
-8. Fazer merge apenas com verificações aprovadas.
-9. O deploy para produção ocorre após merge em main.
+7. Rever regressÃµes e seguranÃ§a.
+8. Fazer merge apenas com verificaÃ§Ãµes aprovadas.
+9. O deploy para producao ocorre apos merge em main.
 
-## Padrão de branches
+## PadrÃ£o de branches
 - feat/issue-N-descricao
 - fix/issue-N-descricao
 - chore/issue-N-descricao
 - test/issue-N-descricao
 - refactor/issue-N-descricao
 
-## Critérios para novas ferramentas
+## CritÃ©rios para novas ferramentas
 Antes de adicionar uma nova ferramenta ou biblioteca, validar:
 - Resolve um problema real?
 - Evita trabalho manual ou reduz risco?
-- Duplica algo já existente?
-- Aumenta significativamente manutenção?
+- Duplica algo ja existente?
+- Aumenta significativamente manutenÃ§Ã£o?
 - Tem custo financeiro relevante?
-- Pode afetar performance, segurança ou deploy?
+- Pode afetar performance, seguranÃ§a ou deploy?
 
-## Prioridades técnicas
-1. Segurança e integridade de dados.
+## Prioridades tÃ©cnicas
+1. SeguranÃ§a e integridade de dados.
 2. Funcionamento correto do produto.
-3. Testes dos fluxos críticos.
+3. Testes dos fluxos crÃ­ticos.
 4. Observabilidade de erros.
-5. Qualidade de código.
+5. Qualidade de cÃ³digo.
 6. UX e acessibilidade.
-7. Otimização e refinamento visual.
+7. OtimizaÃ§Ã£o e refinamento visual.
 
-## Decisões atuais de tooling
-Preferências atuais:
-- Observabilidade: Sentry como primeira opção.
+## DecisÃµes atuais de tooling
+PreferÃªncias atuais:
+- Observabilidade: Sentry como primeira opÃ§Ã£o.
 - Unit/integration tests: Vitest + React Testing Library.
 - E2E: Playwright.
 - Qualidade/lint: avaliar Biome e Knip.
@@ -74,45 +86,45 @@ Preferências atuais:
 - Mutation testing apenas numa fase mais madura do projeto.
 
 ## Back-office
-O projeto prevê um futuro back-office administrativo/comercial.
+O projeto prevÃª um futuro back-office administrativo/comercial.
 
 Quando implementado, deve incluir:
 - utilizadores e contas;
-- planos e subscrições;
-- utilização e quotas;
+- planos e subscriÃ§Ãµes;
+- utilizaÃ§Ã£o e quotas;
 - oportunidades, pesquisas e alertas;
 - notas internas;
 - atividade recente;
-- métricas de negócio;
-- gestão comercial.
+- mÃ©tricas de negÃ³cio;
+- gestÃ£o comercial.
 
-O acesso deve ser protegido por roles e políticas backend.
+O acesso deve ser protegido por roles e polÃ­ticas backend.
 
-## Alterações de UI
+## AlteraÃ§Ãµes de UI
 - Manter linguagem visual B2B profissional.
 - Evitar componentes visualmente ruidosos.
 - Loading states devem ser claros.
-- Skeletons apenas em conteúdo que realmente aguarda dados.
-- Lazy loading apenas onde trouxer benefício real.
-- Transições curtas e discretas.
+- Skeletons apenas em conteÃºdo que realmente aguarda dados.
+- Lazy loading apenas onde trouxer benefÃ­cio real.
+- TransiÃ§Ãµes curtas e discretas.
 - Respeitar prefers-reduced-motion.
 
-## Antes de finalizar qualquer alteração
+## Antes de finalizar qualquer alteraÃ§Ã£o
 Confirmar:
 - npm run build
-- lint aplicável
-- testes aplicáveis
-- sem regressões funcionais
+- lint aplicÃ¡vel
+- testes aplicÃ¡veis
+- sem regressÃµes funcionais
 - sem secrets expostos
-- sem permissões enfraquecidas
-- sem alterações fora do âmbito da Issue
+- sem permissÃµes enfraquecidas
+- sem alteracoes fora do Ã¢mbito da Issue
 
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version has breaking changes - APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev` - verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
