@@ -155,14 +155,22 @@ export default function ExternalDiscoveryPage() {
       setCounters(output.counters);
       setLastNewRecords(output.newRecords);
 
-      // Persiste a execução (dry-run apenas registra; real cria prospects).
+      // Registos a persistir: os NOVOS + os JÁ EXISTENTES que trazem um email.
+      // Reimportar o mesmo ficheiro passa assim a preencher os emails em falta
+      // em prospects que já existiam sem contacto (upsert no backend).
+      const duplicatesWithEmail = output.evaluations.filter(
+        (evaluation) => evaluation.bucket === "duplicate" && Boolean(evaluation.record.email),
+      );
+      const toPersist = [...output.newRecords, ...duplicatesWithEmail];
+
+      // Persiste a execução (dry-run apenas registra; real cria/atualiza prospects).
       const persisted = await persistDiscovery({
         provider: output.provider,
         dryRun,
         filters: output.filters,
         counters: output.counters,
         errors: output.errors,
-        newRecords: output.newRecords,
+        newRecords: toPersist,
       });
 
       setCounters((current) => (current ? { ...current, created: persisted.created } : current));
