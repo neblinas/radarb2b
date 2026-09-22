@@ -1,3 +1,13 @@
+-- Radar B2B - Hotfix FASE 3: coluna competitor_count ambigua na discovery.
+--
+-- A CTE enriched fazia select universe.* (que ja inclui competitor_count da
+-- matview company_prospect_scores) E adicionava
+-- coalesce(universe.competitor_count, 0) as competitor_count, criando duas
+-- colunas com o mesmo nome -> "column reference competitor_count is ambiguous"
+-- em runtime (a migracao original nunca chegou a ser executada).
+--
+-- Correcao: remover a coluna redundante na CTE enriched. A coluna continua
+-- disponivel via universe.*. Reaplicamos a funcao completa (idempotente).
 -- Adjudata — Prospeção B2B: Prospect Discovery Engine (FASE 3).
 --
 -- Porquê esta migração:
