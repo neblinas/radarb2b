@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Ban, Check, Loader2, Power, RefreshCw, ShieldAlert, Sparkles } from "lucide-react";
 import {
@@ -37,6 +37,17 @@ const FLAG_LABELS: { key: keyof AutomationSettings; label: string; hint: string;
   { key: "autopilot_dry_run", label: "Modo simulação", hint: "Executa sem enviar nada. Recomendado para testes." },
   { key: "autopilot_kill_switch", label: "Kill switch (PARA TUDO)", hint: "Interrompe imediatamente toda a automação.", danger: true },
 ];
+
+/** Rótulos por passo da sequência de outreach (1.º contacto + follow-ups). */
+const STEP_LABELS: Record<number, string> = {
+  1: "Primeiro contacto",
+  2: "Follow-up 1",
+  3: "Follow-up final",
+};
+
+function stepLabel(position: number): string {
+  return STEP_LABELS[position] ?? `Passo ${position}`;
+}
 
 function metric(value: unknown): string {
   if (value === null || value === undefined) return "—";
@@ -125,6 +136,19 @@ export default function AutopilotControl() {
     }
   }
 
+    // Agrupa as aprovações pendentes por passo, para não ficarem misturadas.
+  const approvalGroups = useMemo(() => {
+    const groups = new Map<number, PendingApproval[]>();
+    for (const item of approvals) {
+      const list = groups.get(item.step_position) ?? [];
+      list.push(item);
+      groups.set(item.step_position, list);
+    }
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([position, items]) => ({ position, items }));
+  }, [approvals]);
+
   if (loading) {
     return <div className="mt-8 flex items-center gap-2 text-sm text-slate-500"><Loader2 className="animate-spin" size={18} />A carregar painel do autopilot…</div>;
   }
@@ -200,21 +224,32 @@ export default function AutopilotControl() {
         <div className="mt-6 grid gap-3">
           {settings?.autopilot_require_approval === false ? (
             <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm text-amber-200">A aprovação humana está DESLIGADA — os emails são enviados sem revisão. Liga “Exigir aprovação humana” no separador Controlo.</div>
-          ) : null}
-          {approvals.length ? approvals.map((item) => (
-            <article key={item.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white">{item.subject}</p>
-                  <p className="mt-1 text-xs text-slate-500">Para {item.to_email}{item.company_name ? ` · ${item.company_name}` : ""} · passo {item.step_position}</p>
-                </div>
-                <div className="flex shrink-0 gap-2">
-                  <button type="button" onClick={() => decide(item.id, "reject")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/30 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}Rejeitar</button>
-                  <button type="button" onClick={() => decide(item.id, "approve")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/30 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}Aprovar e enviar</button>
-                </div>
+                    ) : null}
+          {approvals.length ? approvalGroups.map((group) => (
+            <section key={group.position} className="grid gap-3">
+              <div className="flex items-center gap-3 pt-2">
+                <span className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-200">
+                  Passo {group.position} · {stepLabel(group.position)}
+                </span>
+                <span className="text-xs text-slate-500">{group.items.length} {group.items.length === 1 ? "mensagem" : "mensagens"}</span>
+                <span className="h-px flex-1 bg-slate-800" />
               </div>
-              <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-400">{item.body}</pre>
-            </article>
+              {group.items.map((item) => (
+                <article key={item.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white">{item.subject}</p>
+                      <p className="mt-1 text-xs text-slate-500">Para {item.to_email}{item.company_name ? ` · ${item.company_name}` : ""}</p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <button type="button" onClick={() => decide(item.id, "reject")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/30 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}Rejeitar</button>
+                      <button type="button" onClick={() => decide(item.id, "approve")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/30 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}Aprovar e enviar</button>
+                    </div>
+                  </div>
+                  <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-400">{item.body}</pre>
+                </article>
+              ))}
+            </section>
           )) : <p className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-sm text-slate-500">Sem emails à espera de aprovação.</p>}
         </div>
       ) : null}
