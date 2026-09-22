@@ -62,6 +62,12 @@ export type ExternalCompanyRecord = {
   employees?: number | null;
   /** Website, quando a fonte o disponibiliza (nunca inferido nesta fase). */
   website?: string | null;
+  /**
+   * Email de contacto, quando a fonte o fornece EXPLICITAMENTE (nunca inferido,
+   * nunca extraído de HTML). No import por ficheiro (CSV/JSON) é a coluna de
+   * contacto declarada pelo administrador.
+   */
+  email?: string | null;
 
   // ---- Proveniência (obrigatória) -----------------------------------------
   /** Identificador estável do provider que produziu o registo. */
@@ -71,6 +77,20 @@ export type ExternalCompanyRecord = {
   /** Data de recolha (ISO). */
   collectedAt: string;
 };
+
+/**
+ * Classificação do email de contacto face à natureza da caixa. Alinhada com a
+ * escala usada no enriquecimento (`company_enrichment_contacts.classification`):
+ *   * `GENERIC_BUSINESS` — caixa institucional/genérica (ex.: `geral@`, `info@`),
+ *     apta para comunicação B2B por interesse legítimo.
+ *   * `NAMED_PERSON`     — aparenta ser de uma pessoa (ex.: `joao.silva@`);
+ *     excluída por omissão no import por ficheiro.
+ *   * `UNKNOWN`          — não é possível determinar com confiança.
+ */
+export type ExternalEmailClassification = "GENERIC_BUSINESS" | "NAMED_PERSON" | "UNKNOWN";
+
+/** Tipo de email alinhado com `prospect_companies.email_type`. */
+export type ExternalEmailType = "geral" | "comercial" | "suporte" | "outro";
 
 /** Filtros de pesquisa aceites pelos providers. */
 export type DiscoveryFilters = {

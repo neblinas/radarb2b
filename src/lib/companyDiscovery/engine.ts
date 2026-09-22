@@ -14,6 +14,7 @@
 import {
   evaluateDiscoveryBatch,
   filtersToObject,
+  inferEmailType,
   sortEvaluations,
   type ExternalCompanyInput,
   type KnownCompanySnapshot,
@@ -109,7 +110,10 @@ export function toPersistPayload(evaluation: ExternalRecordEvaluation): Record<s
     estimated_size: record.size ?? null,
     website: record.website ?? null,
     domain: record.website ? record.website.replace(/^https?:\/\//, "").replace(/\/.*$/, "") : null,
+    email: record.email ?? null,
+    email_type: record.email ? inferEmailType(record.email) : null,
     company_source: record.source,
+    contact_source: record.source,
     source_id: record.sourceId ?? null,
     collected_at: record.collectedAt,
     dedup_key: evaluation.dedupKey,

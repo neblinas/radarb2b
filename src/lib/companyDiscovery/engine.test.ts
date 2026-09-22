@@ -15,6 +15,9 @@ import {
   normalizeNif,
   normalizeSize,
   normalizeState,
+  normalizeEmail,
+  classifyEmail,
+  inferEmailType,
   sortEvaluations,
 } from "./normalize";
 import type { ExternalCompanyRecord } from "./types";
@@ -97,6 +100,104 @@ describe("companyDiscovery — normalização", () => {
   it("rejeita registos sem nome", () => {
     expect(normalizeExternalRecord({ name: "   " }, "file_import", "2026-10-01T00:00:00.000Z")).toBeNull();
     expect(normalizeExternalRecord({ name: null }, "file_import", "2026-10-01T00:00:00.000Z")).toBeNull();
+  });
+});
+
+describe("companyDiscovery — email de contacto (import por ficheiro)", () => {
+  it("normaliza email em minúsculas e valida o formato", () => {
+    expect(normalizeEmail("Geral@Roninformatis.PT")).toBe("geral@roninformatis.pt");
+    expect(normalizeEmail("  info@exemplo.pt  ")).toBe("info@exemplo.pt");
+    expect(normalizeEmail("nao-e-email")).toBeNull();
+    expect(normalizeEmail("sem@dominio")).toBeNull();
+    expect(normalizeEmail(null)).toBeNull();
+  });
+
+  it("classifica caixas genéricas de empresa como GENERIC_BUSINESS", () => {
+    expect(classifyEmail("geral@roninformatis.pt")).toBe("GENERIC_BUSINESS");
+    expect(classifyEmail("info@empresa.pt")).toBe("GENERIC_BUSINESS");
+    expect(classifyEmail("comercial@empresa.pt")).toBe("GENERIC_BUSINESS");
+    expect(classifyEmail("contactos@empresa.pt")).toBe("GENERIC_BUSINESS");
+  });
+
+  it("classifica emails com padrão nome.sobrenome como NAMED_PERSON", () => {
+    expect(classifyEmail("joao.silva@empresa.pt")).toBe("NAMED_PERSON");
+    expect(classifyEmail("maria_santos@empresa.pt")).toBe("NAMED_PERSON");
+    expect(classifyEmail("ana-costa@empresa.pt")).toBe("NAMED_PERSON");
+  });
+
+  it("infere o email_type a partir do prefixo", () => {
+    expect(inferEmailType("geral@empresa.pt")).toBe("geral");
+    expect(inferEmailType("info@empresa.pt")).toBe("geral");
+    expect(inferEmailType("comercial@empresa.pt")).toBe("comercial");
+    expect(inferEmailType("vendas@empresa.pt")).toBe("comercial");
+    expect(inferEmailType("suporte@empresa.pt")).toBe("suporte");
+    expect(inferEmailType("outro@empresa.pt")).toBe("outro");
+  });
+
+  it("transporta o email para o registo normalizado", () => {
+    const normalizado = normalizeExternalRecord(
+      { name: "Roninformatis", nif: "506705803", email: "geral@roninformatis.pt" },
+      "file_import",
+      "2026-10-01T00:00:00.000Z",
+    );
+    expect(normalizado?.email).toBe("geral@roninformatis.pt");
+  });
+
+  it("exclui (invalid) emails que aparentam ser de pessoa nomeada", () => {
+    const evaluation = evaluateExternalRecord(
+      record({ email: "joao.silva@empresa.pt" }),
+      emptyKnownCompanySnapshot(),
+    );
+    expect(evaluation.bucket).toBe("invalid");
+    expect(evaluation.reason).toMatch(/pessoa nomeada/i);
+  });
+
+  it("aceita emails genéricos de empresa como registos novos", () => {
+    const evaluation = evaluateExternalRecord(
+      record({ email: "geral@empresa.pt" }),
+      emptyKnownCompanySnapshot(),
+    );
+    expect(evaluation.bucket).toBe("new");
+  });
+
+  it("importa o CSV real do utilizador (coluna 'contacto') com o email presente", async () => {
+    const { runDiscoveryEngine } = await import("./engine");
+    const { FileCompanyDiscoveryProvider } = await import("./providers/fileProvider");
+    const csv = [
+      "nome;nif;distrito;concelho;localidade;website;contacto;id",
+      "Roninformatis;506705803;Braga;Braga;Braga;https://roninformatis.pt/;geral@roninformatis.pt;prospect_001",
+    ].join("\n");
+    const provider = new FileCompanyDiscoveryProvider(csv, "prospects.csv");
+    const output = await runDiscoveryEngine({
+      provider,
+      filters: { ...defaultFilters(), limit: 10 },
+      known: emptyKnownCompanySnapshot(),
+      dryRun: true,
+    });
+        expect(output.newRecords).toHaveLength(1);
+    expect(output.newRecords[0].record.email).toBe("geral@roninformatis.pt");
+    expect(output.newRecords[0].record.nif).toBe("506705803");
+    expect(output.newRecords[0].record.sourceId).toBe("prospect_001");
+  });
+
+  it("o payload de persistência deriva email_type e proveniência honesta", async () => {
+    const { toPersistPayload } = await import("./engine");
+    const evaluation = evaluateExternalRecord(
+      record({ email: "comercial@empresa.pt", source: "file_import" }),
+      emptyKnownCompanySnapshot(),
+    );
+    const payload = toPersistPayload(evaluation);
+    expect(payload.email).toBe("comercial@empresa.pt");
+    expect(payload.email_type).toBe("comercial");
+    // A origem do contacto é o próprio provider — nunca um valor inventado.
+    expect(payload.contact_source).toBe("file_import");
+    expect(payload.company_source).toBe("file_import");
+  });
+
+  it("não atribui email_type quando não há email (sem dados inventados)", async () => {
+    const { toPersistPayload } = await import("./engine");
+    const evaluation = evaluateExternalRecord(record({ email: null }), emptyKnownCompanySnapshot());
+    expect(toPersistPayload(evaluation).email_type).toBeNull();
   });
 });
 
