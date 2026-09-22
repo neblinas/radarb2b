@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Ban, Check, Loader2, Power, RefreshCw, ShieldAlert, Sparkles } from "lucide-react";
+import { AlertTriangle, Ban, Check, Clock, Loader2, Power, RefreshCw, ShieldAlert, Sparkles } from "lucide-react";
 import {
   fetchAutopilotDashboard,
   fetchRecentRuns,
@@ -49,6 +49,24 @@ function stepLabel(position: number): string {
   return STEP_LABELS[position] ?? `Passo ${position}`;
 }
 
+/** Texto de contexto sobre o passo anterior (quando foi enviado). */
+function previousStepContext(prevStep: number, lastSentAt: string | null, daysSince: number | null): string {
+  if (!lastSentAt) {
+    return "Sem envio anterior — é o primeiro contacto com este prospect.";
+  }
+  const when = new Date(lastSentAt).toLocaleString("pt-PT", {
+    day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit",
+  });
+  const ago = daysSince == null
+    ? ""
+    : daysSince === 0
+      ? " (hoje)"
+      : daysSince === 1
+        ? " (há 1 dia)"
+        : ` (há ${daysSince} dias)`;
+  return `Passo ${prevStep} enviado a ${when}${ago}`;
+}
+
 function metric(value: unknown): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "number") return value.toLocaleString("pt-PT");
@@ -60,12 +78,13 @@ export default function AutopilotControl() {
   const [settings, setSettings] = useState<AutomationSettings | null>(null);
   const [dashboard, setDashboard] = useState<AutopilotDashboard | null>(null);
   const [runs, setRuns] = useState<AutomationRunRow[]>([]);
-  const [suppressions, setSuppressions] = useState<SuppressionRow[]>([]);
+    const [suppressions, setSuppressions] = useState<SuppressionRow[]>([]);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
   const [sent, setSent] = useState<SentOutreach[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [approvalStep, setApprovalStep] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -136,7 +155,7 @@ export default function AutopilotControl() {
     }
   }
 
-    // Agrupa as aprovações pendentes por passo, para não ficarem misturadas.
+        // Agrupa as aprovações pendentes por passo, para separadores por passo.
   const approvalGroups = useMemo(() => {
     const groups = new Map<number, PendingApproval[]>();
     for (const item of approvals) {
@@ -148,6 +167,20 @@ export default function AutopilotControl() {
       .sort(([a], [b]) => a - b)
       .map(([position, items]) => ({ position, items }));
   }, [approvals]);
+
+  // Passo atualmente visível: mantém o escolhido se ainda existir; senão o primeiro.
+  const activeStep = useMemo(() => {
+    if (!approvalGroups.length) return null;
+    if (approvalStep != null && approvalGroups.some((g) => g.position === approvalStep)) {
+      return approvalStep;
+    }
+    return approvalGroups[0].position;
+  }, [approvalGroups, approvalStep]);
+
+  const activeApprovals = useMemo(
+    () => approvalGroups.find((g) => g.position === activeStep)?.items ?? [],
+    [approvalGroups, activeStep],
+  );
 
   if (loading) {
     return <div className="mt-8 flex items-center gap-2 text-sm text-slate-500"><Loader2 className="animate-spin" size={18} />A carregar painel do autopilot…</div>;
@@ -220,37 +253,67 @@ export default function AutopilotControl() {
         </div>
       ) : null}
 
-      {tab === "approvals" ? (
-        <div className="mt-6 grid gap-3">
+            {tab === "approvals" ? (
+        <div className="mt-6">
           {settings?.autopilot_require_approval === false ? (
-            <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm text-amber-200">A aprovação humana está DESLIGADA — os emails são enviados sem revisão. Liga “Exigir aprovação humana” no separador Controlo.</div>
-                    ) : null}
-          {approvals.length ? approvalGroups.map((group) => (
-            <section key={group.position} className="grid gap-3">
-              <div className="flex items-center gap-3 pt-2">
-                <span className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cyan-200">
-                  Passo {group.position} · {stepLabel(group.position)}
-                </span>
-                <span className="text-xs text-slate-500">{group.items.length} {group.items.length === 1 ? "mensagem" : "mensagens"}</span>
-                <span className="h-px flex-1 bg-slate-800" />
+            <div className="mb-4 rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm text-amber-200">A aprovação humana está DESLIGADA — os emails são enviados sem revisão. Liga “Exigir aprovação humana” no separador Controlo.</div>
+          ) : null}
+
+          {approvals.length ? (
+            <>
+              {/* Separadores por passo da sequência. */}
+              <div className="flex flex-wrap gap-2" role="tablist" aria-label="Passos da sequência de outreach">
+                {approvalGroups.map((group) => {
+                  const isActive = group.position === activeStep;
+                  return (
+                    <button
+                      key={group.position}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setApprovalStep(group.position)}
+                      className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition ${
+                        isActive
+                          ? "border-cyan-400/40 bg-cyan-400/10 text-cyan-200"
+                          : "border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      <span className="text-xs uppercase tracking-wider text-slate-500">Passo {group.position}</span>
+                      <span>{stepLabel(group.position)}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs ${isActive ? "bg-cyan-400/20 text-cyan-100" : "bg-slate-800 text-slate-400"}`}>
+                        {group.items.length}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              {group.items.map((item) => (
-                <article key={item.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white">{item.subject}</p>
-                      <p className="mt-1 text-xs text-slate-500">Para {item.to_email}{item.company_name ? ` · ${item.company_name}` : ""}</p>
+
+              {/* Lista do passo selecionado. */}
+              <div className="mt-4 grid gap-3">
+                {activeApprovals.map((item) => (
+                  <article key={item.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white">{item.subject}</p>
+                        <p className="mt-1 text-xs text-slate-500">Para {item.to_email}{item.company_name ? ` · ${item.company_name}` : ""}</p>
+                        <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-slate-500">
+                          <Clock size={13} className="text-slate-600" />
+                          {previousStepContext(item.previous_step, item.last_sent_at, item.days_since_last)}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button type="button" onClick={() => decide(item.id, "reject")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/30 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}Rejeitar</button>
+                        <button type="button" onClick={() => decide(item.id, "approve")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/30 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}Aprovar e enviar</button>
+                      </div>
                     </div>
-                    <div className="flex shrink-0 gap-2">
-                      <button type="button" onClick={() => decide(item.id, "reject")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/30 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}Rejeitar</button>
-                      <button type="button" onClick={() => decide(item.id, "approve")} disabled={busy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/30 px-3 py-2 text-xs font-semibold text-emerald-200 hover:bg-emerald-400/10 disabled:opacity-50">{busy === item.id ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}Aprovar e enviar</button>
-                    </div>
-                  </div>
-                  <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-400">{item.body}</pre>
-                </article>
-              ))}
-            </section>
-          )) : <p className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-sm text-slate-500">Sem emails à espera de aprovação.</p>}
+                    <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-400">{item.body}</pre>
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-sm text-slate-500">Sem emails à espera de aprovação.</p>
+          )}
         </div>
       ) : null}
 
