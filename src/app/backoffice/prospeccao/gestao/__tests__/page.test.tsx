@@ -1,5 +1,6 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProspectingManagementPage from "@/app/backoffice/prospeccao/gestao/page";
 
@@ -63,19 +64,29 @@ const row = {
   total_count: 42,
 };
 
+const findOptions = { timeout: 3000 };
+
+function setupRpc(overrides: Record<string, unknown> = {}) {
+  mocks.rpc.mockImplementation((name: string) => {
+    if (overrides[name]) return Promise.resolve(overrides[name]);
+    if (name === "prospect_management_metrics") {
+      return Promise.resolve({
+        data: { total: 42, enriched: 30, with_public_contact: 18, ready_for_autopilot: 5, contacted: 7, converted: 2, opted_out: 3 },
+        error: null,
+      });
+    }
+    if (name === "prospect_categories") return Promise.resolve({ data: ["SOFTWARE"], error: null });
+    return Promise.resolve({ data: [row], error: null });
+  });
+}
+
 describe("ProspectingManagementPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.getUser.mockResolvedValue({
       data: { user: { id: "user-1", email: "gestor@example.com", app_metadata: { role: "commercial_manager" } } },
     });
-    mocks.rpc.mockImplementation((name: string) => {
-      if (name === "prospect_management_metrics") {
-        return Promise.resolve({ data: { total: 42, enriched: 30, with_public_contact: 18, ready_for_autopilot: 5, contacted: 7, converted: 2, opted_out: 3 }, error: null });
-      }
-      if (name === "prospect_categories") return Promise.resolve({ data: ["SOFTWARE"], error: null });
-      return Promise.resolve({ data: [row], error: null });
-    });
+    setupRpc();
   });
 
   it("bloqueia utilizadores sem role comercial", async () => {
@@ -85,7 +96,7 @@ describe("ProspectingManagementPage", () => {
 
     render(<ProspectingManagementPage />);
 
-    expect(await screen.findByText("Área reservada.")).toBeInTheDocument();
+    expect(await screen.findByText("Área reservada.", undefined, findOptions)).toBeInTheDocument();
     expect(mocks.rpc).not.toHaveBeenCalledWith("prospect_management_list", expect.anything());
   });
 
@@ -93,7 +104,7 @@ describe("ProspectingManagementPage", () => {
     render(<ProspectingManagementPage />);
 
     expect(await screen.findByText("Revisão e operação do funil de prospects")).toBeInTheDocument();
-    expect(await screen.findByText("Empresa Alfa")).toBeInTheDocument();
+    expect(await screen.findByText("Empresa Alfa", undefined, findOptions)).toBeInTheDocument();
     expect(screen.getByText("Total de prospects")).toBeInTheDocument();
     expect(screen.getByText("Prontos para Autopilot")).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledWith(
@@ -110,6 +121,77 @@ describe("ProspectingManagementPage", () => {
 
     render(<ProspectingManagementPage />);
 
-    expect(await screen.findByText(/migração `20261002090000_prospecting_management.sql`/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/migração `20261002090000_prospecting_management.sql`/i, undefined, findOptions),
+    ).toBeInTheDocument();
+  });
+
+  it("aplica uma ação em lote aos prospects selecionados", async () => {
+    const user = userEvent.setup();
+    setupRpc({
+      prospect_management_metrics: { data: { total: 42 }, error: null },
+      prospect_categories: { data: [], error: null },
+      prospect_management_action_bulk: {
+        data: [
+          {
+            prospect_id: "prospect-1",
+            applied: true,
+            commercial_status: "READY_FOR_AUTOPILOT",
+            enrichment_status: "READY_FOR_AUTOPILOT",
+            opt_out: false,
+            error: null,
+          },
+        ],
+        error: null,
+      },
+    });
+
+    render(<ProspectingManagementPage />);
+    await screen.findByText("Empresa Alfa", undefined, findOptions);
+
+    await user.click(screen.getByLabelText("Selecionar todos os prospects da página"));
+    expect(screen.getByText("1 selecionado(s)")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Preparar para Autopilot" }));
+    await user.click(screen.getByRole("button", { name: /Confirmar em lote/ }));
+
+    await waitFor(
+      () => expect(mocks.rpc.mock.calls.some(([name]) => name === "prospect_management_action_bulk")).toBe(true),
+      { timeout: 2000 },
+    );
+
+    const bulkCall = mocks.rpc.mock.calls.find(([name]) => name === "prospect_management_action_bulk");
+    expect(bulkCall?.[1]).toEqual({ p_ids: ["prospect-1"], p_action: "READY_AUTOPILOT", p_reason: null });
+    expect(await screen.findByText(/aplicado\(s\) com sucesso/, undefined, findOptions)).toBeInTheDocument();
+  }, 15000);
+
+  it("mostra o detalhe dos prospects bloqueados no lote", async () => {
+    const user = userEvent.setup();
+    setupRpc({
+      prospect_management_metrics: { data: { total: 42 }, error: null },
+      prospect_categories: { data: [], error: null },
+      prospect_management_action_bulk: {
+        data: [
+          {
+            prospect_id: "prospect-1",
+            applied: false,
+            commercial_status: null,
+            enrichment_status: null,
+            opt_out: null,
+            error: "Prospecto com opt-out — não pode ser reativado",
+          },
+        ],
+        error: null,
+      },
+    });
+
+    render(<ProspectingManagementPage />);
+    await screen.findByText("Empresa Alfa", undefined, findOptions);
+
+    await user.click(screen.getByLabelText("Selecionar Empresa Alfa"));
+    await user.click(screen.getByRole("button", { name: "Aprovar" }));
+    await user.click(screen.getByRole("button", { name: /Confirmar em lote/ }));
+
+    expect(await screen.findByText(/Prospecto com opt-out/, undefined, findOptions)).toBeInTheDocument();
   });
 });

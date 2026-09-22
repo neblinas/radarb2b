@@ -4,6 +4,7 @@ vi.mock("@/lib/supabase", () => ({ supabase: { rpc: vi.fn() } }));
 
 import { supabase } from "@/lib/supabase";
 import {
+  bulkResultMessage,
   canRunManagementAction,
   formatEuroShort,
   getManagementDetail,
@@ -11,9 +12,16 @@ import {
   isContactBlocked,
   listManagementProspects,
   managementActionLabel,
+  managementActions,
+  managementBulkActionDescription,
   managementPages,
   managementTotal,
+  pruneSelection,
   runManagementAction,
+  runManagementBulkAction,
+  selectableRowIds,
+  summarizeBulkResults,
+  type ManagementBulkResult,
   type ProspectManagementRow,
 } from "./prospectManagement";
 
@@ -105,10 +113,51 @@ describe("prospectManagement — helpers de paginação e formatação", () => {
     expect(formatEuroShort(250000)).toContain("250");
   });
 
-  it("tem rótulo legível para cada ação", () => {
+    it("tem rótulo legível para cada ação", () => {
     for (const action of ["APPROVE", "REJECT", "READY_AUTOPILOT", "OPT_OUT", "RESET"] as const) {
       expect(managementActionLabel[action]).toBeTruthy();
     }
+  });
+
+  it("expõe a ordem canónica das ações e descrição de lote", () => {
+    expect(managementActions).toEqual(["APPROVE", "READY_AUTOPILOT", "REJECT", "OPT_OUT", "RESET"]);
+    for (const action of managementActions) {
+      expect(managementBulkActionDescription[action]).toBeTruthy();
+    }
+  });
+});
+
+describe("prospectManagement — seleção e resultados em lote", () => {
+  it("lista os ids selecionáveis da página", () => {
+    expect(selectableRowIds([row({ id: "a" }), row({ id: "b" })])).toEqual(["a", "b"]);
+  });
+
+  it("poda ids que já não estão visíveis", () => {
+    const visible = [row({ id: "a" }), row({ id: "b" })];
+    expect(pruneSelection(["a", "c"], visible)).toEqual(["a"]);
+  });
+
+  it("resume o resultado de um lote", () => {
+    const results: ManagementBulkResult[] = [
+      { prospect_id: "a", applied: true, commercial_status: "ELIGIBLE", enrichment_status: "ELIGIBLE", opt_out: false, error: null },
+      { prospect_id: "b", applied: false, commercial_status: null, enrichment_status: null, opt_out: null, error: "opt-out" },
+    ];
+    expect(summarizeBulkResults(results)).toEqual({ total: 2, applied: 1, failed: 1 });
+  });
+
+  it("constrói a mensagem de sucesso, falha total e parcial", () => {
+    const ok: ManagementBulkResult[] = [
+      { prospect_id: "a", applied: true, commercial_status: "ELIGIBLE", enrichment_status: "ELIGIBLE", opt_out: false, error: null },
+    ];
+    const allFail: ManagementBulkResult[] = [
+      { prospect_id: "a", applied: false, commercial_status: null, enrichment_status: null, opt_out: null, error: "x" },
+    ];
+    const mixed: ManagementBulkResult[] = [...ok, ...allFail];
+
+    expect(bulkResultMessage("APPROVE", [])).toMatch(/Nenhum prospect/);
+    expect(bulkResultMessage("APPROVE", ok)).toMatch(/1 prospecto/);
+    expect(bulkResultMessage("APPROVE", allFail)).toMatch(/Nenhum|não|Não/i);
+    expect(bulkResultMessage("APPROVE", mixed)).toMatch(/1 de 2/);
   });
 });
 
@@ -170,7 +219,7 @@ describe("prospectManagement — I/O", () => {
     expect(vi.mocked(supabase.rpc)).toHaveBeenCalledWith("prospect_management_detail", { p_id: "p1" });
   });
 
-  it("runManagementAction envia ação e motivo", async () => {
+    it("runManagementAction envia ação e motivo", async () => {
     vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: null, error: null } as never);
     await runManagementAction("p1", "OPT_OUT", "Pedido do titular");
     expect(vi.mocked(supabase.rpc)).toHaveBeenCalledWith("prospect_management_action", {
@@ -178,6 +227,26 @@ describe("prospectManagement — I/O", () => {
       p_action: "OPT_OUT",
       p_reason: "Pedido do titular",
     });
+  });
+
+  it("runManagementBulkAction envia ids e ação", async () => {
+    const results: ManagementBulkResult[] = [
+      { prospect_id: "a", applied: true, commercial_status: "READY_FOR_AUTOPILOT", enrichment_status: "READY_FOR_AUTOPILOT", opt_out: false, error: null },
+    ];
+    vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: results, error: null } as never);
+    const returned = await runManagementBulkAction(["a", "b"], "READY_AUTOPILOT");
+    expect(returned).toBe(results);
+    expect(vi.mocked(supabase.rpc)).toHaveBeenCalledWith("prospect_management_action_bulk", {
+      p_ids: ["a", "b"],
+      p_action: "READY_AUTOPILOT",
+      p_reason: null,
+    });
+  });
+
+  it("runManagementBulkAction não chama o backend com seleção vazia", async () => {
+    const returned = await runManagementBulkAction([], "APPROVE");
+    expect(returned).toEqual([]);
+    expect(vi.mocked(supabase.rpc)).not.toHaveBeenCalled();
   });
 
   it("propaga erros do backend", async () => {
