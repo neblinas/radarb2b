@@ -100,6 +100,12 @@ export type PendingApproval = {
   body: string;
   step_position: number;
   created_at: string;
+  /** Data do último email efetivamente enviado (passo anterior). Null se nunca enviado. */
+  last_sent_at: string | null;
+  /** Dias decorridos desde o envio anterior. Null se nunca enviado. */
+  days_since_last: number | null;
+  /** Nº do passo anterior esperado (step_position - 1). */
+  previous_step: number;
 };
 
 export type ApprovalMetrics = {
