@@ -36,10 +36,13 @@ import {
   managementBulkActionDescription,
   managementPages,
   managementTotal,
+  prepareProspectsForAutopilot,
+  prepareResultMessage,
   pruneSelection,
   runManagementBulkAction,
   selectableRowIds,
   summarizeBulkResults,
+  type PrepareAutopilotItem,
 } from "@/lib/prospectManagement";
 
 const allowedRoles = new Set(["admin", "commercial", "commercial_manager"]);
@@ -109,6 +112,8 @@ export default function ProspectingManagementPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkNotice, setBulkNotice] = useState("");
   const [bulkResults, setBulkResults] = useState<ManagementBulkResult[]>([]);
+  const [prepareBusy, setPrepareBusy] = useState(false);
+  const [prepareResults, setPrepareResults] = useState<PrepareAutopilotItem[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -204,6 +209,24 @@ export default function ProspectingManagementPage() {
     [selected, rows, load],
   );
 
+  const performPrepare = useCallback(async () => {
+    const ids = pruneSelection(selected, rows);
+    if (!ids.length) return;
+    setPrepareBusy(true);
+    setBulkNotice("");
+    setBulkResults([]);
+    setPrepareResults([]);
+    try {
+      const results = await prepareProspectsForAutopilot(ids);
+      setPrepareResults(results);
+      setBulkNotice(prepareResultMessage(results));
+      setSelected([]);
+      await load();
+    } catch {
+      setBulkNotice("Não foi possível preparar para o Autopilot. Confirma a migração `20261011090000_prospect_prepare_autopilot.sql` e as permissões.");
+    }
+    setPrepareBusy(false);
+  }, [selected, rows, load]);
   const total = managementTotal(rows);
   const pages = managementPages(total, filters.pageSize ?? pageSize);
   const page = filters.page ?? 1;
@@ -445,6 +468,16 @@ export default function ProspectingManagementPage() {
                   </button>
                 );
               })}
+              <button
+                type="button"
+                disabled={validSelection.length === 0 || prepareBusy}
+                onClick={() => void performPrepare()}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+                title="Inscreve as empresas selecionadas no Autopilot e prepara a mensagem por empresa"
+              >
+                {prepareBusy ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
+                Inscrever no Autopilot
+              </button>
             </div>
           </div>
 
@@ -493,6 +526,20 @@ export default function ProspectingManagementPage() {
               <p className="pt-1 text-[11px] text-amber-100/70">
                 {summarizeBulkResults(bulkResults).applied} aplicado(s) · {summarizeBulkResults(bulkResults).failed} bloqueado(s)
               </p>
+            </div>
+          ) : null}
+
+          {prepareResults.length ? (
+            <div className="mt-3 space-y-1.5 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3">
+              <p className="text-xs font-semibold text-cyan-200">Inscrição no Autopilot — detalhe por empresa</p>
+              {prepareResults.map((result) => {
+                const name = rows.find((row) => row.id === result.prospect_id)?.name ?? result.prospect_id;
+                return (
+                  <p key={result.prospect_id} className={`text-xs ${result.ok ? "text-emerald-200" : "text-amber-100/90"}`}>
+                    {name}: {result.reason}
+                  </p>
+                );
+              })}
             </div>
           ) : null}
         </section>

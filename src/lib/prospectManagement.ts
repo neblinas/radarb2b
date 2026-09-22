@@ -371,6 +371,61 @@ export function formatEuroShort(value: number | null | undefined): string {
   }).format(value);
 }
 
+/** Resultado da preparação de um prospecto para o Autopilot (FASE 9). */
+export type PrepareAutopilotItem = {
+  prospect_id: string;
+  company_id: string | null;
+  ok: boolean;
+  reason: string;
+};
+
+/** Mensagem de Autopilot gerada por empresa (FASE 9). */
+export type AutopilotMessage = {
+  message_id: string;
+  enrollment_id: string;
+  company_id: string | null;
+  company_name: string | null;
+  company_nif: string | null;
+  to_email: string;
+  subject: string;
+  status: string;
+  step_position: number;
+  created_at: string;
+  sent_at: string | null;
+};
+
+/** Rótulos legíveis do estado de uma mensagem de outreach (fila de aprovação). */
+export const outreachMessageStatusLabel: Record<string, string> = {
+  queued: "Em fila",
+  pending_approval: "A aguardar aprovação",
+  approved: "Aprovada",
+  rejected: "Rejeitada",
+  sent: "Enviada",
+  failed: "Falhou",
+  skipped: "Ignorada",
+};
+
+/**
+ * Resume a preparação para o Autopilot: quantos ficaram inscritos e quantos
+ * ficaram bloqueados (com motivo). Pura e testável.
+ */
+export function summarizePrepareResults(results: PrepareAutopilotItem[]): {
+  total: number;
+  prepared: number;
+  blocked: number;
+} {
+  const prepared = results.filter((result) => result.ok).length;
+  return { total: results.length, prepared, blocked: results.length - prepared };
+}
+
+/** Mensagem legível do resultado da preparação para o Autopilot. */
+export function prepareResultMessage(results: PrepareAutopilotItem[]): string {
+  const { total, prepared, blocked } = summarizePrepareResults(results);
+  if (total === 0) return "Nenhum prospect selecionado.";
+  if (blocked === 0) return `${prepared} empresa(s) inscritas no Autopilot. A mensagem será preparada por empresa.`;
+  if (prepared === 0) return `Não foi possível inscrever nenhuma das ${total} empresas. Ver detalhe dos bloqueios.`;
+  return `${prepared} de ${total} empresa(s) inscritas no Autopilot. ${blocked} bloqueada(s) — ver detalhe.`;
+}
 // ---------------------------------------------------------------------------
 // I/O — Supabase
 // ---------------------------------------------------------------------------
@@ -449,4 +504,33 @@ export async function runManagementBulkAction(
   });
   if (error) throw error;
   return (data ?? []) as ManagementBulkResult[];
+}
+
+/**
+ * Inscreve um lote de prospectos no Autopilot (FASE 9). Para cada empresa:
+ * garante um contacto de email comercial, assume o prospecto no Autopilot e cria
+ * a inscrição (que gera a mensagem por empresa no próximo ciclo do worker).
+ * Devolve, por prospecto, se ficou inscrito ou o motivo do bloqueio — nunca
+ * silencia falhas (sem email, sem empresa no Radar, opt-out, suppression).
+ */
+export async function prepareProspectsForAutopilot(
+  ids: string[],
+  campaignId?: string | null,
+): Promise<PrepareAutopilotItem[]> {
+  if (!ids.length) return [];
+  const { data, error } = await supabase.rpc("prospect_prepare_autopilot_bulk", {
+    p_ids: ids,
+    p_campaign_id: campaignId ?? null,
+  });
+  if (error) throw error;
+  return (data ?? []) as PrepareAutopilotItem[];
+}
+
+/** Lista as mensagens de Autopilot geradas por empresa (para confirmação na UI). */
+export async function listAutopilotMessages(limit = 50): Promise<AutopilotMessage[]> {
+  const { data, error } = await supabase.rpc("prospect_autopilot_messages_list", {
+    p_limit: limit,
+  });
+  if (error) throw error;
+  return (data ?? []) as AutopilotMessage[];
 }
