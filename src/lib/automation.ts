@@ -128,6 +128,28 @@ export async function fetchApprovalMetrics(): Promise<ApprovalMetrics> {
   return (data ?? {}) as ApprovalMetrics;
 }
 
+// ---------------------------------------------------------------------------
+// Histórico de enviados (back-office)
+// ---------------------------------------------------------------------------
+
+export type SentOutreach = {
+  id: string;
+  enrollment_id: string;
+  company_id: string | null;
+  company_name: string | null;
+  to_email: string;
+  subject: string;
+  step_position: number;
+  sent_at: string | null;
+  created_at: string;
+};
+
+export async function fetchRecentSent(limit = 50): Promise<SentOutreach[]> {
+  const { data, error } = await supabase.rpc("outreach_recent_sent", { p_limit: limit });
+  if (error) throw error;
+  return (data ?? []) as SentOutreach[];
+}
+
 export const suppressionReasonLabel: Record<string, string> = {
   unsubscribe: "Cancelou subscrição",
   do_not_contact: "Não contactar",

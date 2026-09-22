@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AlertTriangle, Ban, Check, Loader2, Power, RefreshCw, ShieldAlert, Sparkles } from "lucide-react";
 import {
   fetchAutopilotDashboard,
@@ -13,16 +14,18 @@ import {
   decideApproval,
   fetchAutomationSettings,
   fetchPendingApprovals,
+  fetchRecentSent,
   fetchSuppressions,
   setKillSwitch,
   updateAutomationSetting,
   suppressionReasonLabel,
   type AutomationSettings,
   type PendingApproval,
+  type SentOutreach,
   type SuppressionRow,
 } from "@/lib/automation";
 
-type Tab = "flags" | "approvals" | "suppression" | "logs";
+type Tab = "flags" | "approvals" | "sent" | "suppression" | "logs";
 
 const FLAG_LABELS: { key: keyof AutomationSettings; label: string; hint: string; danger?: boolean }[] = [
   { key: "sales_autopilot_enabled", label: "Autopilot ligado", hint: "Motor de prospeção ativo." },
@@ -48,6 +51,7 @@ export default function AutopilotControl() {
   const [runs, setRuns] = useState<AutomationRunRow[]>([]);
   const [suppressions, setSuppressions] = useState<SuppressionRow[]>([]);
   const [approvals, setApprovals] = useState<PendingApproval[]>([]);
+  const [sent, setSent] = useState<SentOutreach[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -56,18 +60,20 @@ export default function AutopilotControl() {
     setLoading(true);
     setError("");
     try {
-      const [settingsResult, dashboardResult, runsResult, supResult, approvalsResult] = await Promise.all([
+      const [settingsResult, dashboardResult, runsResult, supResult, approvalsResult, sentResult] = await Promise.all([
         fetchAutomationSettings(),
         fetchAutopilotDashboard(),
         fetchRecentRuns(50),
         fetchSuppressions(100),
         fetchPendingApprovals(50),
+        fetchRecentSent(50),
       ]);
       setSettings(settingsResult);
       setDashboard(dashboardResult);
       setRuns(runsResult);
       setSuppressions(supResult);
       setApprovals(approvalsResult);
+      setSent(sentResult);
     } catch {
       setError("Não foi possível carregar o painel. Confirma que as migrações do autopilot foram executadas e que tens role de gestor.");
     } finally {
@@ -150,7 +156,7 @@ export default function AutopilotControl() {
       </div>
 
       <div className="mt-6 flex gap-2 border-b border-slate-800">
-        {([["flags", "Controlo"], ["approvals", `Aprovações (${approvals.length})`], ["suppression", `Suppression (${suppressions.length})`], ["logs", "Registo"]] as [Tab, string][]).map(([value, label]) => (
+        {([["flags", "Controlo"], ["approvals", `Aprovações (${approvals.length})`], ["sent", `Enviados (${sent.length})`], ["suppression", `Suppression (${suppressions.length})`], ["logs", "Registo"]] as [Tab, string][]).map(([value, label]) => (
           <button key={value} type="button" onClick={() => setTab(value)} className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium ${tab === value ? "border-cyan-400 text-cyan-300" : "border-transparent text-slate-500 hover:text-slate-300"}`}>{label}</button>
         ))}
       </div>
@@ -210,6 +216,29 @@ export default function AutopilotControl() {
               <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-400">{item.body}</pre>
             </article>
           )) : <p className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center text-sm text-slate-500">Sem emails à espera de aprovação.</p>}
+        </div>
+      ) : null}
+
+      {tab === "sent" ? (
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
+          <div className="min-w-[820px]">
+            <div className="grid grid-cols-[minmax(200px,1.4fr)_minmax(200px,1.4fr)_120px_90px_180px] gap-4 border-b border-slate-800 px-5 py-4 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              <span>Para</span><span>Assunto</span><span>Empresa</span><span>Passo</span><span className="text-right">Enviado</span>
+            </div>
+            {sent.length ? sent.map((item) => (
+              <div key={item.id} className="grid grid-cols-[minmax(200px,1.4fr)_minmax(200px,1.4fr)_120px_90px_180px] items-center gap-4 border-b border-slate-800 px-5 py-3 last:border-0 text-sm">
+                <Link href={`/backoffice/prospeccao/${item.company_id}`} className="truncate text-cyan-300 hover:text-cyan-200">
+                  {item.to_email}
+                </Link>
+                <span className="truncate text-slate-400" title={item.subject}>{item.subject}</span>
+                <span className="truncate text-slate-400">{item.company_name || "—"}</span>
+                <span className="text-slate-500">#{item.step_position}</span>
+                <span className="text-right text-xs text-slate-500">
+                  {new Date(item.sent_at ?? item.created_at).toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
+            )) : <p className="p-8 text-center text-sm text-slate-500">Ainda não há emails enviados pelo Autopilot.</p>}
+          </div>
         </div>
       ) : null}
 
