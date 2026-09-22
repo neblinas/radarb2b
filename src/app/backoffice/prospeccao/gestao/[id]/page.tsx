@@ -27,9 +27,10 @@ import {
   enrichmentStatusLabelDetailed,
   formatEuroShort,
   getManagementDetail,
-  isContactBlocked,
+    isContactBlocked,
   managementActionDescription,
   managementActionLabel,
+  managementActions,
   runManagementAction,
 } from "@/lib/prospectManagement";
 
@@ -134,9 +135,9 @@ export default function ProspectManagementDetailPage({ params }: { params: Promi
       <main className="min-h-screen px-4 py-16 text-center text-rose-200">{error || "Prospect não encontrado."}</main>
     );
 
-  const blocked = isContactBlocked(detail);
+    const blocked = isContactBlocked(detail);
   const canManage = manageRoles.has(identity.role);
-  const actions: ManagementAction[] = ["APPROVE", "READY_AUTOPILOT", "REJECT", "OPT_OUT", "RESET"];
+  const actions = managementActions;
 
   return (
     <BackofficeShell email={identity.email} role={identity.role}>

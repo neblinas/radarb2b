@@ -43,6 +43,40 @@ export const managementActionDescription: Record<ManagementAction, string> = {
   RESET: "Devolve o estado comercial a Novo. Nunca repõe um opt-out.",
 };
 
+/** Descrição das ações quando aplicadas em lote (âmbito plural e seleção). */
+export const managementBulkActionDescription: Record<ManagementAction, string> = {
+  APPROVE: "Marca todos os prospects selecionados como elegíveis para contacto comercial.",
+  REJECT: "Rejeita todos os prospects selecionados. Não serão priorizados.",
+  READY_AUTOPILOT: "Marca os selecionados como prontos para o Autopilot. Não inscreve em campanhas.",
+  OPT_OUT: "Aplica opt-out definitivo a todos os selecionados. Impede qualquer contacto futuro.",
+  RESET: "Devolve o estado comercial dos selecionados a Novo. Nunca repõe um opt-out.",
+};
+
+/**
+ * Ordem canónica das ações administrativas (individual e em lote). Uma única
+ * fonte de verdade para a UI do detalhe e da listagem, evitando divergência.
+ */
+export const managementActions: ManagementAction[] = [
+  "APPROVE",
+  "READY_AUTOPILOT",
+  "REJECT",
+  "OPT_OUT",
+  "RESET",
+];
+
+/**
+ * Resultado da aplicação de uma ação a um único prospecto dentro de um lote.
+ * Espelha linha a linha o payload de `prospect_management_action_bulk`.
+ */
+export type ManagementBulkResult = {
+  prospect_id: string;
+  applied: boolean;
+  commercial_status: string | null;
+  enrichment_status: string | null;
+  opt_out: boolean | null;
+  error: string | null;
+};
+
 /** Etiquetas legíveis do estado comercial (espelha o funil de prospeção). */
 export const commercialStatusLabelDetailed: Record<string, string> = {
   NEW: "Novo",
@@ -291,6 +325,42 @@ export function managementPages(total: number, pageSize: number): number {
   return Math.max(1, Math.ceil(total / pageSize));
 }
 
+/** Ids da página atual que podem ser selecionados para ações em lote. */
+export function selectableRowIds(rows: ProspectManagementRow[]): string[] {
+  return rows
+    .filter((row) => typeof row.id === "string" && row.id.length > 0)
+    .map((row) => row.id);
+}
+
+/**
+ * Remove ids que não constam na lista visível (evita agir sobre linhas que
+ * desapareceram com a paginação/filtros). Devolve em ordem determinística.
+ */
+export function pruneSelection(selected: string[], rows: ProspectManagementRow[]): string[] {
+  const visible = new Set(selectableRowIds(rows));
+  return selected.filter((id) => visible.has(id));
+}
+
+/** Resumo agregado do resultado de um lote. */
+export function summarizeBulkResults(results: ManagementBulkResult[]): {
+  total: number;
+  applied: number;
+  failed: number;
+} {
+  const applied = results.filter((result) => result.applied).length;
+  return { total: results.length, applied, failed: results.length - applied };
+}
+
+/** Mensagem legível do resultado de um lote para a UI. */
+export function bulkResultMessage(action: ManagementAction, results: ManagementBulkResult[]): string {
+  const { total, applied, failed } = summarizeBulkResults(results);
+  const label = managementActionLabel[action].toLowerCase();
+  if (total === 0) return "Nenhum prospect selecionado.";
+  if (failed === 0) return `${applied} prospecto(s): "${label}" aplicado(s) com sucesso.`;
+  if (applied === 0) return `Não foi possível aplicar "${label}" a nenhum dos ${total} prospecto(s) selecionado(s).`;
+  return `${applied} de ${total} prospecto(s) atualizados. ${failed} bloqueado(s) — ver detalhe.`;
+}
+
 /** Formata um valor em euros (máx. 0 decimais) ou "—". */
 export function formatEuroShort(value: number | null | undefined): string {
   if (value == null) return "—";
@@ -358,4 +428,25 @@ export async function runManagementAction(
     p_reason: reason ?? null,
   });
   if (error) throw error;
+}
+
+/**
+ * Aplica a mesma ação administrativa a vários prospectos em lote. Cada item é
+ * processado de forma independente no backend (mesmas regras e auditoria do
+ * caso individual) e o resultado por prospecto é devolvido, sem silenciar
+ * falhas (ex.: tentar reativar um opt-out devolve `applied: false` com motivo).
+ */
+export async function runManagementBulkAction(
+  ids: string[],
+  action: ManagementAction,
+  reason?: string | null,
+): Promise<ManagementBulkResult[]> {
+  if (!ids.length) return [];
+  const { data, error } = await supabase.rpc("prospect_management_action_bulk", {
+    p_ids: ids,
+    p_action: action,
+    p_reason: reason ?? null,
+  });
+  if (error) throw error;
+  return (data ?? []) as ManagementBulkResult[];
 }

@@ -1,26 +1,66 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, LockKeyhole, Search, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  LockKeyhole,
+  RotateCcw,
+  Search,
+  Send,
+  ShieldAlert,
+  SlidersHorizontal,
+  XCircle,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BackofficeShell from "@/components/BackofficeShell";
 import { supabase } from "@/lib/supabase";
 import {
+  type ManagementAction,
+  type ManagementBulkResult,
   type ProspectManagementFilters,
   type ProspectManagementMetrics,
   type ProspectManagementRow,
+  bulkResultMessage,
   commercialStatusLabelDetailed,
   emptyManagementFilters,
   enrichmentStatusLabelDetailed,
   formatEuroShort,
   getManagementMetrics,
   listManagementProspects,
+  managementActionLabel,
+  managementActions,
+  managementBulkActionDescription,
   managementPages,
   managementTotal,
+  pruneSelection,
+  runManagementBulkAction,
+  selectableRowIds,
+  summarizeBulkResults,
 } from "@/lib/prospectManagement";
 
 const allowedRoles = new Set(["admin", "commercial", "commercial_manager"]);
+const manageRoles = new Set(["admin", "commercial_manager"]);
 const pageSize = 25;
+
+const actionIcon: Record<ManagementAction, typeof CheckCircle2> = {
+  APPROVE: CheckCircle2,
+  READY_AUTOPILOT: Send,
+  REJECT: XCircle,
+  OPT_OUT: ShieldAlert,
+  RESET: RotateCcw,
+};
+
+const actionStyle: Record<ManagementAction, string> = {
+  APPROVE: "border-emerald-400/30 text-emerald-200 hover:bg-emerald-400/10",
+  READY_AUTOPILOT: "border-cyan-400/30 text-cyan-200 hover:bg-cyan-400/10",
+  REJECT: "border-slate-600 text-slate-300 hover:bg-slate-500/10",
+  OPT_OUT: "border-rose-400/30 text-rose-200 hover:bg-rose-400/10",
+  RESET: "border-slate-700 text-slate-300 hover:bg-slate-500/10",
+};
 
 const statusFilters = [
   ["", "Todos os estados"],
@@ -64,6 +104,11 @@ export default function ProspectingManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState<ManagementAction | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkNotice, setBulkNotice] = useState("");
+  const [bulkResults, setBulkResults] = useState<ManagementBulkResult[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -100,8 +145,64 @@ export default function ProspectingManagementPage() {
   }, [state, load]);
 
   const update = useCallback((patch: Partial<ProspectManagementFilters>) => {
+    // Ao mudar filtros/página, a seleção deixa de fazer sentido.
+    setSelected([]);
+    setBulkAction(null);
+    setBulkNotice("");
+    setBulkResults([]);
     setFilters((current) => ({ ...current, ...patch, page: patch.page ?? 1 }));
   }, []);
+
+  // A seleção só considera linhas visíveis na página atual (evita agir sobre
+  // registos que desapareceram com filtros/paginação).
+  const pageIds = useMemo(() => selectableRowIds(rows), [rows]);
+  const validSelection = useMemo(() => pruneSelection(selected, rows), [selected, rows]);
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => validSelection.includes(id));
+
+  const canManage = manageRoles.has(identity.role);
+
+  const toggleRow = useCallback((id: string) => {
+    setSelected((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    setSelected((current) => {
+      const visible = selectableRowIds(rows);
+      const allSelected = visible.length > 0 && visible.every((id) => current.includes(id));
+      return allSelected ? [] : visible;
+    });
+  }, [rows]);
+
+  const requestBulkAction = useCallback((action: ManagementAction) => {
+    setBulkNotice("");
+    setBulkResults([]);
+    setBulkAction((current) => (current === action ? null : action));
+  }, []);
+
+  const performBulkAction = useCallback(
+    async (action: ManagementAction) => {
+      const ids = pruneSelection(selected, rows);
+      if (!ids.length) {
+        setBulkAction(null);
+        return;
+      }
+      setBulkBusy(true);
+      setBulkNotice("");
+      setBulkResults([]);
+      try {
+        const results = await runManagementBulkAction(ids, action);
+        setBulkResults(results);
+        setBulkNotice(bulkResultMessage(action, results));
+        setBulkAction(null);
+        setSelected([]);
+        await load();
+      } catch {
+        setBulkNotice("Não foi possível aplicar a ação em lote. Confirma a migração `20261007090000_prospecting_management_bulk.sql` e as permissões.");
+      }
+      setBulkBusy(false);
+    },
+    [selected, rows, load],
+  );
 
   const total = managementTotal(rows);
   const pages = managementPages(total, filters.pageSize ?? pageSize);
@@ -119,6 +220,8 @@ export default function ProspectingManagementPage() {
       ["Opt-out", m?.opted_out ?? 0],
     ] as const;
   }, [metrics]);
+
+  const blockedResults = bulkResults.filter((result) => !result.applied);
 
   if (state === "loading")
     return <main className="min-h-screen px-4 py-16 text-center text-slate-400">A validar permissões…</main>;
@@ -141,7 +244,8 @@ export default function ProspectingManagementPage() {
         <h1 className="mt-3 text-3xl font-semibold text-white">Revisão e operação do funil de prospects</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
           Uma visão única das empresas-prospecto: filtra, abre o detalhe e executa as ações administrativas (aprovar, rejeitar,
-          preparar para Autopilot ou aplicar opt-out). As transições são validadas e auditadas no backend.
+          preparar para Autopilot, aplicar opt-out ou reiniciar estado). Podes agir prospect a prospect ou selecionar vários e
+          aplicar a mesma ação em lote. As transições são validadas e auditadas no backend.
         </p>
       </header>
 
@@ -300,9 +404,117 @@ export default function ProspectingManagementPage() {
 
       {error ? <p className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/5 p-4 text-sm text-rose-200">{error}</p> : null}
 
+      {canManage ? (
+        <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-semibold text-white">Ações em lote</span>
+              <span className="rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-300">
+                {validSelection.length} selecionado(s)
+              </span>
+              {validSelection.length ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelected([]);
+                    setBulkAction(null);
+                    setBulkNotice("");
+                    setBulkResults([]);
+                  }}
+                  className="text-xs text-slate-500 hover:text-cyan-300"
+                >
+                  Limpar seleção
+                </button>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {managementActions.map((action) => {
+                const Icon = actionIcon[action];
+                const disabled = validSelection.length === 0 || bulkBusy;
+                const isActive = bulkAction === action;
+                return (
+                  <button
+                    key={action}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => requestBulkAction(action)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${actionStyle[action]} ${isActive ? "ring-1 ring-cyan-400/40" : ""}`}
+                  >
+                    {bulkBusy && isActive ? <Loader2 className="animate-spin" size={14} /> : <Icon size={14} />}
+                    {managementActionLabel[action]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {bulkAction ? (
+            <div className="mt-3 rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+              <p className="text-xs text-slate-400">
+                {managementBulkActionDescription[bulkAction]} Serão afetados {validSelection.length} prospecto(s) da seleção.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void performBulkAction(bulkAction)}
+                  disabled={bulkBusy || validSelection.length === 0}
+                  className="inline-flex items-center gap-2 rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-bold text-slate-950 disabled:opacity-60"
+                >
+                  {bulkBusy ? <Loader2 className="animate-spin" size={14} /> : null}
+                  Confirmar em lote
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBulkAction(null)}
+                  disabled={bulkBusy}
+                  className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {bulkNotice ? (
+            <p className="mt-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3 text-xs text-cyan-200">{bulkNotice}</p>
+          ) : null}
+
+          {blockedResults.length ? (
+            <div className="mt-3 space-y-1.5 rounded-xl border border-amber-400/20 bg-amber-400/5 p-3">
+              <p className="text-xs font-semibold text-amber-200">Detalhe dos bloqueados</p>
+              {blockedResults.map((result) => {
+                const name = rows.find((row) => row.id === result.prospect_id)?.name ?? result.prospect_id;
+                return (
+                  <p key={result.prospect_id} className="text-xs text-amber-100/90">
+                    {name}: {result.error || "não aplicado"}
+                  </p>
+                );
+              })}
+              <p className="pt-1 text-[11px] text-amber-100/70">
+                {summarizeBulkResults(bulkResults).applied} aplicado(s) · {summarizeBulkResults(bulkResults).failed} bloqueado(s)
+              </p>
+            </div>
+          ) : null}
+        </section>
+      ) : (
+        <p className="mt-5 rounded-xl border border-slate-800 bg-slate-900/40 p-4 text-sm text-slate-500">
+          Só admin e gestor comercial podem executar ações. Podes consultar a lista e as fichas.
+        </p>
+      )}
+
       <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
-        <div className="min-w-[1180px]">
-          <div className="grid grid-cols-[minmax(220px,1.6fr)_110px_130px_120px_150px_140px_140px] gap-4 border-b border-slate-800 px-5 py-4 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <div className="min-w-[1210px]">
+          <div className="grid grid-cols-[40px_minmax(220px,1.6fr)_110px_130px_120px_150px_140px_140px] gap-4 border-b border-slate-800 px-5 py-4 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <span className="flex items-center">
+              <input
+                type="checkbox"
+                aria-label="Selecionar todos os prospects da página"
+                checked={allPageSelected}
+                disabled={!canManage || pageIds.length === 0}
+                onChange={toggleAll}
+                className="h-4 w-4 accent-cyan-400 disabled:opacity-40"
+              />
+            </span>
             <span>Empresa</span>
             <span>Score</span>
             <span>Estado</span>
@@ -319,17 +531,29 @@ export default function ProspectingManagementPage() {
             rows.map((row) => (
               <div
                 key={row.id}
-                className="grid grid-cols-[minmax(220px,1.6fr)_110px_130px_120px_150px_140px_140px] items-center gap-4 border-b border-slate-800 px-5 py-4 last:border-0"
+                className="grid grid-cols-[40px_minmax(220px,1.6fr)_110px_130px_120px_150px_140px_140px] items-center gap-4 border-b border-slate-800 px-5 py-4 last:border-0"
               >
+                <span className="flex items-center">
+                  <input
+                    type="checkbox"
+                    aria-label={`Selecionar ${row.name}`}
+                    checked={validSelection.includes(row.id)}
+                    disabled={!canManage}
+                    onChange={() => toggleRow(row.id)}
+                    className="h-4 w-4 accent-cyan-400 disabled:opacity-40"
+                  />
+                </span>
                 <Link href={`/backoffice/prospeccao/gestao/${row.id}`} className="min-w-0 hover:text-cyan-200">
                   <p className="truncate font-medium text-white">{row.name}</p>
                   <p className="mt-1 truncate text-xs text-slate-500">
                     NIF {row.nif || "—"}
-                    {row.categories && row.categories.length
-                      ? <> · <span className="text-cyan-400/80">{row.categories.join(", ")}</span></>
-                      : row.cpv_codes && row.cpv_codes.length
-                        ? <> · {row.cpv_codes.slice(0, 3).join(", ")}</>
-                        : " · CPV não disponível"}
+                    {row.categories && row.categories.length ? (
+                      <span className="text-cyan-400/80"> · {row.categories.join(", ")}</span>
+                    ) : row.cpv_codes && row.cpv_codes.length ? (
+                      ` · ${row.cpv_codes.slice(0, 3).join(", ")}`
+                    ) : (
+                      " · CPV não disponível"
+                    )}
                   </p>
                 </Link>
                 <span className={`w-fit rounded-full border px-2.5 py-1 text-xs font-semibold ${healthClass(row)}`}>
