@@ -34,9 +34,15 @@ Aplicar **exatamente nesta ordem** (o timestamp no nome define a ordem):
 | 6 | `20260924095000_customer_lifecycle.sql` | Ciclo de vida |
 | 7 | `20260924096000_autopilot_control_center.sql` | Painel/atividade |
 | 8 | `20260924097000_outreach_approval_queue.sql` | Aprovação humana |
+| 9 | `20261020090000_dedup_outreach_messages.sql` | Anti-duplicação de envios |
 
 Todas são **idempotentes** (`create ... if not exists`, `on conflict do nothing`),
 podendo ser reaplicadas sem erro.
+
+A migração 9 garante que **não há envios duplicados ao mesmo passo**: deduplica
+mensagens existentes, cria a constraint única `(enrollment_id, step_position)` em
+`outreach_messages` e corrige `outreach_enroll_prospect` para **não recomeçar a
+sequência** (`current_step = 0`) quando reativa um enrollment já existente.
 
 **Verificação rápida** (deve devolver `8` tabelas de autopilot):
 
@@ -143,6 +149,12 @@ Confirmar antes de ligar qualquer envio real. Cada item produz uma prova.
 - [ ] **Aprovação:** aprovar uma mensagem no painel; confirmar job re-enfileirado
       e (com Resend de teste) exatamente 1 email enviado.
 - [ ] **Rejeição:** rejeitar outra; confirmar enrollment em `paused` e sem envio.
+- [ ] **Anti-duplicação:** preparar o mesmo prospecto duas vezes
+      (`prospect_prepare_autopilot_bulk` / botão "Enviar para Autopilot");
+      confirmar que **não** é criada uma segunda mensagem para o mesmo passo
+      (`select enrollment_id, step_position, count(*) from outreach_messages
+      group by 1,2 having count(*) > 1` não devolve linhas) e que `current_step`
+      do enrollment **não** volta a 0.
 - [ ] **Suppression:** inscrever um email na suppression; confirmar que um
       enrollment para esse email é saltado.
 - [ ] **Inbound:** POST de teste para `inbound-email` com `reply+TOKEN@…`;
