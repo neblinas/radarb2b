@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 export const backofficeNav = [
   { label: "Visão geral", href: "/backoffice", icon: LayoutDashboard },
   { label: "Os meus dados", href: "/perfil", icon: Settings2 },
-  { label: "Clientes e colaboradores", href: "/backoffice/contas", icon: Users },
+  { label: "Contas", href: "/backoffice/contas", icon: Users },
   { label: "Novo colaborador", href: "/backoffice/colaboradores/novo", icon: UserPlus },
   { label: "Planos e utilização", href: "/backoffice/planos", icon: BarChart3 },
     { label: "Ganhos da equipa", href: "/backoffice/comissoes", icon: BarChart3 },
