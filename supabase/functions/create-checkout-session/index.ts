@@ -145,6 +145,7 @@ Deno.serve(async (req) => {
           headers: {
             Authorization: `Bearer ${stripeSecretKey}`,
             "Content-Type": "application/x-www-form-urlencoded",
+            "Stripe-Version": "2026-03-25.dahlia; custom_checkout_payment_form_preview=v1",
           },
           body: customerParams,
         },
@@ -183,6 +184,13 @@ Deno.serve(async (req) => {
     const checkoutParams = new URLSearchParams();
 
     checkoutParams.set("mode", "subscription");
+    checkoutParams.set("ui_mode", "form");
+    checkoutParams.set("billing_address_collection", "auto");
+    checkoutParams.set("phone_number_collection[enabled]", "false");
+    checkoutParams.set("automatic_tax[enabled]", "false");
+    checkoutParams.set("payment_method_collection", "always");
+    checkoutParams.set("submit_type", "auto");
+    checkoutParams.set("integration_identifier", "custom_embedded_web_0001");
     checkoutParams.set("customer", stripeCustomerId);
     checkoutParams.set("line_items[0][price]", stripePriceId);
     checkoutParams.set("line_items[0][quantity]", "1");
@@ -234,6 +242,7 @@ Deno.serve(async (req) => {
         headers: {
           Authorization: `Bearer ${stripeSecretKey}`,
           "Content-Type": "application/x-www-form-urlencoded",
+          "Stripe-Version": "2026-03-25.dahlia; custom_checkout_payment_form_preview=v1",
         },
         body: checkoutParams,
       },
@@ -250,7 +259,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        url: checkoutSession.url,
+        client_secret: checkoutSession.client_secret,
       }),
       {
         status: 200,

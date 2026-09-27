@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatEuros, plans, type PaidPlanId } from "@/lib/plans";
+import StripeCheckoutForm from "@/components/StripeCheckoutForm";
 
 type Billing = "monthly" | "annual";
 
@@ -14,6 +15,7 @@ export default function PlansPage() {
   const [billing, setBilling] = useState<Billing>("monthly");
   const [processing, setProcessing] = useState<PaidPlanId | null>(null);
   const [error, setError] = useState("");
+  const [checkout, setCheckout] = useState<{ planId: PaidPlanId; billing: Billing } | null>(null);
 
   async function selectPlan(planId: PaidPlanId) {
     setProcessing(planId);
@@ -23,13 +25,13 @@ export default function PlansPage() {
       router.push(`/login?next=${encodeURIComponent("/planos")}`);
       return;
     }
-    const { data, error: functionError } = await supabase.functions.invoke("create-checkout-session", { body: { plan_id: planId, billing } });
-    if (functionError || !data?.url) {
+    if (typeof window === "undefined") {
       setError("Não foi possível preparar o pagamento. Tenta novamente.");
       setProcessing(null);
       return;
     }
-    window.location.assign(data.url);
+    setCheckout({ planId, billing });
+    setProcessing(null);
   }
 
   return (
@@ -63,6 +65,7 @@ export default function PlansPage() {
         </div>
 
         {error ? <div className="mt-6 rounded-xl border border-rose-400/20 bg-rose-400/5 p-4 text-sm text-rose-200">{error}</div> : null}
+        {checkout ? <StripeCheckoutForm planId={checkout.planId} billing={checkout.billing} onClose={() => setCheckout(null)} /> : null}
 
         <div className="mt-8 grid gap-5 lg:grid-cols-3">
           {plans.map((plan) => {
