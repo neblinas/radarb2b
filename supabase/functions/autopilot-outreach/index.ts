@@ -215,7 +215,7 @@ async function prepareStep(
     if (canSend !== true) {
       await admin.rpc("automation_enqueue_service", {
         p_organization_id: organizationId, p_job_type: "send_outreach", p_entity_type: "enrollment",
-        p_entity_id: enrollmentId, p_dedup_key: `outreach:${enrollmentId}:${Date.now()}`,
+        p_entity_id: enrollmentId, p_dedup_key: `outreach:${enrollmentId}`,
         p_scheduled_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(), p_priority: 50,
       });
       return "skipped";
@@ -233,6 +233,8 @@ async function prepareStep(
 
   const token = crypto.randomUUID().replace(/-/g, "");
   const initialStatus = options.dryRun ? "queued" : options.requireApproval ? "pending_approval" : "queued";
+  // Idempotência: se já existir mensagem para este passo (unique
+  // enrollment_id + step_position), não criar uma segunda — é um duplicado.
   const { data: message, error: messageError } = await admin
     .from("outreach_messages")
     .insert({
@@ -241,7 +243,17 @@ async function prepareStep(
     })
     .select("id")
     .single();
-  if (messageError) throw messageError;
+  if (messageError) {
+    if (messageError.code === "23505" || /duplicate key/i.test(messageError.message)) {
+      await admin.rpc("automation_log", {
+        p_level: "warn", p_step: "outreach_duplicate_step",
+        p_message: `Passo ${step.next_step} já existe para ${step.to_email} — ignorado para evitar duplicado`,
+        p_metadata: { enrollment_id: enrollmentId, step: step.next_step },
+      });
+      return "skipped";
+    }
+    throw messageError;
+  }
 
   // Dry-run: não envia.
   if (options.dryRun || !options.resendApiKey) {
@@ -309,7 +321,7 @@ async function sendApprovedMessage(
       await admin.from("outreach_messages").update({ status: "approved" }).eq("id", row.message_id);
       await admin.rpc("automation_enqueue_service", {
         p_organization_id: organizationId, p_job_type: "send_outreach", p_entity_type: "message",
-        p_entity_id: row.message_id, p_dedup_key: `outreach_approved:${row.message_id}:${Date.now()}`,
+        p_entity_id: row.message_id, p_dedup_key: `outreach_approved:${row.message_id}`,
         p_scheduled_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(), p_priority: 20,
       });
       return "skipped";
