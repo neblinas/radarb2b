@@ -36,11 +36,46 @@ const benefits = [
   },
 ];
 
+/**
+ * Traduz o erro devolvido pelo Supabase Auth (GoTrue) para uma mensagem
+ * accionável em português. NÃO assume a causa: distingue o caso de email de
+ * confirmação indisponível (problema de configuração de servidor) de
+ * credenciais/estado do utilizador, para o utilizador não ficar bloqueado
+ * sem saber o que fazer.
+ */
+function describeSignupError(error: { message?: string; code?: string; status?: number }): string {
+  const message = (error.message ?? "").toLowerCase();
+  const code = (error.code ?? "").toLowerCase();
+
+  if (
+    message.includes("error sending confirmation email") ||
+    message.includes("error sending invite email") ||
+    message.includes("error sending recovery email") ||
+    code === "unexpected_failure"
+  ) {
+    return "Não foi possível enviar o email de confirmação neste momento. Tenta novamente dentro de instantes; se persistir, contacta o suporte.";
+  }
+  if (code === "user_already_exists" || message.includes("already registered") || message.includes("already been registered")) {
+    return "Já existe uma conta com este email. Inicia sessão ou recupera a palavra-passe.";
+  }
+  if (code === "email_address_invalid" || message.includes("invalid email")) {
+    return "O email indicado não é válido.";
+  }
+  if (code === "weak_password" || message.includes("password should be")) {
+    return "A palavra-passe é demasiado fraca. Usa pelo menos 6 caracteres.";
+  }
+  if (code === "over_email_send_rate_limit" || message.includes("rate limit") || error.status === 429) {
+    return "Demasiados pedidos. Aguarda um ou dois minutos antes de tentar novamente.";
+  }
+  return error.message || "Não foi possível criar a conta. Tenta novamente.";
+}
+
 export default function LoginPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -56,6 +91,9 @@ export default function LoginPage() {
 
       if (recoveryRequested) {
         setIsRecovery(true);
+      }
+      if (new URLSearchParams(window.location.search).get("mode") === "signup") {
+        setIsSignup(true);
       }
     }, 0);
 
@@ -111,13 +149,33 @@ export default function LoginPage() {
         return;
       }
 
+      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password)) {
+        setError("A palavra-passe deve ter pelo menos 8 caracteres, incluindo letras maiúsculas e minúsculas, um número e um caractere especial.");
+        setLoading(false);
+        return;
+      }
+      if (password !== passwordConfirmation) {
+        setError("As palavras-passe não coincidem.");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: { emailRedirectTo: `${window.location.origin}/confirmacao` },
       });
 
       if (error) {
-        setError(error.message);
+        setError(describeSignupError(error));
+        setLoading(false);
+        return;
+      }
+
+      // Supabase (GoTrue) devolve um utilizador "ofuscado" quando o email já
+      // existe, sem erro. `identities` vazio indica conta já registada.
+      if (Array.isArray(data.user?.identities) && data.user.identities.length === 0) {
+        setError("Já existe uma conta com este email. Inicia sessão ou recupera a palavra-passe.");
         setLoading(false);
         return;
       }
@@ -365,6 +423,15 @@ export default function LoginPage() {
                   ) : null}
                 </div>
 
+                {isSignup ? (
+                  <div>
+                    <label htmlFor="password-confirmation" className="mb-2 block text-sm font-medium text-slate-300">
+                      Confirmar palavra-passe
+                    </label>
+                    <input id="password-confirmation" type="password" required minLength={8} autoComplete="new-password" value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} placeholder="Repete a palavra-passe" className="h-12 w-full rounded-xl border border-slate-800 bg-[#06101f] px-4 text-sm text-white outline-none transition placeholder:text-slate-700 focus:border-cyan-500/60 focus:ring-2 focus:ring-cyan-500/10" />
+                  </div>
+                ) : null}
+
                 {error ? (
                   <div
                     role="alert"
@@ -388,10 +455,10 @@ export default function LoginPage() {
                     <input
                       type="checkbox"
                       checked={acceptedTerms}
-                      onChange={(event) => setAcceptedTerms(event.target.checked)}
+                                            onChange={(event) => setAcceptedTerms(event.target.checked)}
                       className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-700 bg-slate-900 accent-cyan-400"
                     />
-                                        <span>
+                    <span>
                       Li e aceito os{" "}
                       <Link
                         href="/termos"

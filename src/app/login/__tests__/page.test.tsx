@@ -64,7 +64,10 @@ function fillCredentials() {
     target: { value: "novo@empresa.pt" },
   });
   fireEvent.change(screen.getByLabelText("Palavra-passe"), {
-    target: { value: "segredo123" },
+    target: { value: "Segredo123!" },
+  });
+  fireEvent.change(screen.getByLabelText("Confirmar palavra-passe"), {
+    target: { value: "Segredo123!" },
   });
 }
 
@@ -112,7 +115,7 @@ describe("LoginPage - aceitação de termos no registo", () => {
     expect(mocks.signUp).not.toHaveBeenCalled();
   });
 
-  it("permite o registo depois de aceitar os termos", async () => {
+    it("permite o registo depois de aceitar os termos", async () => {
     render(<LoginPage />);
 
     enableSignupMode();
@@ -124,9 +127,46 @@ describe("LoginPage - aceitação de termos no registo", () => {
     await waitFor(() => {
       expect(mocks.signUp).toHaveBeenCalledWith({
         email: "novo@empresa.pt",
-        password: "segredo123",
+        password: "Segredo123!",
+        options: { emailRedirectTo: `${window.location.origin}/confirmacao` },
       });
     });
+  });
+
+  it("mostra mensagem accionável quando o envio do email de confirmação falha", async () => {
+    mocks.signUp.mockResolvedValueOnce({
+      data: { user: { id: "user-test", identities: [] }, session: null },
+      error: { message: "Error sending confirmation email", code: "unexpected_failure", status: 500 },
+    });
+
+    render(<LoginPage />);
+
+    enableSignupMode();
+    fillCredentials();
+    fireEvent.click(screen.getByRole("checkbox"));
+    submitForm();
+
+    expect(
+      await screen.findByText(/não foi possível enviar o email de confirmação/i),
+    ).toBeInTheDocument();
+  });
+
+  it("avisa quando o email já está registado (identities vazio, sem erro)", async () => {
+    mocks.signUp.mockResolvedValueOnce({
+      data: { user: { id: "user-test", identities: [] }, session: null },
+      error: null,
+    });
+
+    render(<LoginPage />);
+
+    enableSignupMode();
+    fillCredentials();
+    fireEvent.click(screen.getByRole("checkbox"));
+    submitForm();
+
+    expect(
+      await screen.findByText(/já existe uma conta com este email/i),
+    ).toBeInTheDocument();
   });
 });
 
