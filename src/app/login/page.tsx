@@ -230,7 +230,7 @@ export default function LoginPage() {
     const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
       email,
       {
-        redirectTo: `${window.location.origin}/login?mode=reset`,
+        redirectTo: `${window.location.origin}/recuperar-password`,
       },
     );
 
