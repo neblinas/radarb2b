@@ -1,5 +1,9 @@
 project_id = "swelyfjlnvpxgahchpxc"
 
+[auth.email.template.confirmation]
+subject = "Confirma o teu email no Adjudata"
+content_path = "./supabase/templates/confirmation.html"
+
 # NOTA IMPORTANTE SOBRE verify_jwt
 # O default do Supabase CLI é verify_jwt = true. As funções abaixo são invocadas
 # SEM um JWT de utilizador (cron, webhooks ou links públicos de email), pelo que
