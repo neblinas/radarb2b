@@ -19,3 +19,8 @@ export function trackEvent(
 
   gtag("event", name, params);
 }
+
+/** Regista uma conta criada com sucesso, sem enviar dados pessoais. */
+export function trackSignUp(): void {
+  trackEvent("sign_up", { method: "email" });
+}

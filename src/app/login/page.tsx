@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { trackSignUp } from "@/lib/analytics";
 
 const benefits = [
   {
@@ -82,6 +83,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const signupTracked = useRef(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -160,10 +162,11 @@ export default function LoginPage() {
         return;
       }
 
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://adjudata.pt";
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/confirmacao` },
+        options: { emailRedirectTo: `${siteUrl}/confirmacao` },
       });
 
       if (error) {
@@ -180,6 +183,13 @@ export default function LoginPage() {
         return;
       }
 
+      // signUp terminou sem erro e não representa uma conta já existente.
+      // A guarda evita duplicados por submissões repetidas neste fluxo.
+      if (!signupTracked.current) {
+        signupTracked.current = true;
+        trackSignUp();
+      }
+
       if (data.session) {
         router.push(destination);
         router.refresh();
@@ -189,6 +199,7 @@ export default function LoginPage() {
       setMessage(
         "Conta criada. Verifica o teu email para confirmar a conta.",
       );
+      setError("");
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -227,14 +238,16 @@ export default function LoginPage() {
       return;
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://adjudata.pt";
     const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
       email,
       {
-        redirectTo: `${window.location.origin}/recuperar-password`,
+        redirectTo: `${siteUrl}/recuperar-password`,
       },
     );
 
     if (recoveryError) {
+      setError(`Não foi possível enviar o email de recuperação: ${recoveryError.message || "erro de configuração do email"}`);
       setError("Não foi possível enviar o email de recuperação. Tenta novamente.");
     } else {
       setMessage("Enviámos um link de recuperação para o teu email.");
